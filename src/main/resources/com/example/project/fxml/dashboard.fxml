@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.project.controller.DashboardController">
+    <top>
+        <HBox spacing="10">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0" />
+            </padding>
+            <Button fx:id="btnAddTask" text="Tambah Tugas" onAction="#onAddTask" />
+            <Button fx:id="btnShowAll" text="Daftar Tugas" onAction="#onShowAll" />
+            <Button fx:id="btnShowPending" text="Belum Selesai" onAction="#onShowPending" />
+            <Button fx:id="btnShowCompleted" text="Selesai" onAction="#onShowCompleted" />
+        </HBox>
+    </top>
+    <center>
+        <TableView fx:id="taskTable" prefWidth="800">
+            <columns>
+                <TableColumn fx:id="colName" text="Nama" prefWidth="100"/>
+                <TableColumn fx:id="colCourse" text="Mata Kuliah" prefWidth="100"/>
+                <TableColumn fx:id="colDate" text="Tanggal" prefWidth="100"/>
+                <TableColumn fx:id="colTime" text="Waktu" prefWidth="100"/>
+                <TableColumn fx:id="colPriority" text="Prioritas" prefWidth="100"/>
+                <TableColumn fx:id="colProgress" text="Progress (%)" prefWidth="100"/>
+                <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+                <TableColumn fx:id="colAction" text="Aksi" prefWidth="100"/>
+            </columns>
+        </TableView>
+    </center>
+</BorderPane>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.project.controller.LoginController"
+            prefHeight="550.0" prefWidth="850.0" styleClass="root-pane-login">
+    <children>
+        <HBox alignment="CENTER" AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" styleClass="main-container-dual-login">
+
+            <VBox fx:id="signInPane" styleClass="form-pane-left" alignment="CENTER_LEFT" spacing="18.0"
+                  HBox.hgrow="ALWAYS"> <padding>
+                <Insets top="50" right="60" bottom="50" left="60"/>
+            </padding>
+                <children>
+                    <Label text="Sign in" styleClass="title-text-form"/>
+                    <Label text="Email" styleClass="form-label"/>
+                    <TextField fx:id="emailField" promptText="Masukkan email Anda" styleClass="input-field" maxWidth="Infinity"/>
+                    <Label text="Password" styleClass="form-label"/>
+                    <PasswordField fx:id="passwordField" promptText="Masukkan password" styleClass="input-field" maxWidth="Infinity"/>
+                    <Button text="Sign in" onAction="#handleLogin" styleClass="action-button-form" maxWidth="Infinity"/>
+                    <Label fx:id="statusLabel" styleClass="status-label" minHeight="20"/>
+                </children>
+            </VBox>
+
+            <VBox fx:id="welcomePaneLogin" styleClass="welcome-pane-right" alignment="CENTER" spacing="25.0"
+                  HBox.hgrow="ALWAYS"> <padding>
+                <Insets top="50" right="60" bottom="50" left="60"/>
+            </padding>
+                <children>
+                    <Label text="Hallo, teman!" styleClass="title-text-welcome"/>
+                    <Label text="Belum punya akun?&#10;Daftar dan mulai kelola tugasmu!" styleClass="subtitle-text-welcome" textAlignment="CENTER" wrapText="true"/>
+                    <Button text="Sign up" onAction="#goToRegister" styleClass="secondary-action-button"/>
+                </children>
+            </VBox>
+        </HBox>
+    </children>
+</AnchorPane>

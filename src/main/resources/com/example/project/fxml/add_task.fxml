@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.project.controller.AddTaskController">
+    <children>
+        <VBox spacing="15.0" alignment="TOP_LEFT"
+              AnchorPane.topAnchor="20" AnchorPane.leftAnchor="20"
+              AnchorPane.rightAnchor="20" AnchorPane.bottomAnchor="20">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+
+            <Label text="Aplikasi Management Tugas"
+                   style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+
+            <GridPane hgap="15" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="120"/>
+                    <ColumnConstraints minWidth="200"/>
+                    <ColumnConstraints minWidth="120"/>
+                    <ColumnConstraints minWidth="200"/>
+                </columnConstraints>
+
+                <rowConstraints>
+                    <RowConstraints minHeight="30"/>
+                    <RowConstraints minHeight="60"/>
+                    <RowConstraints minHeight="30"/>
+                    <RowConstraints minHeight="30"/>
+                    <RowConstraints minHeight="30"/>
+                </rowConstraints>
+
+                <Label text="Nama:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="namaField" promptText="nama tugas" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Deskripsi:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextArea fx:id="deskripsiField" promptText="deskripsi singkat tugas"
+                          prefRowCount="3" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Mata Kuliah:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="matkulField" promptText="mata kuliah tugas tersebut"
+                           GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Tanggal:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <TextField fx:id="tanggalField" promptText="dd/mm/yyyy - optional"
+                           GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                <Label text="Waktu:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <TextField fx:id="waktuField" promptText="hh:mm - optional"
+                           GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                <Label text="Prioritas:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                <ComboBox fx:id="prioritasBox" promptText="Pilih prioritas"
+                          GridPane.rowIndex="0" GridPane.columnIndex="3"/>
+
+                <Label text="Progress:" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                <Slider fx:id="progressSlider" min="0" max="100" value="0"
+                        GridPane.rowIndex="1" GridPane.columnIndex="3"/>
+            </GridPane>
+
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Simpan" fx:id="saveButton" onAction="#handleSave"
+                        style="-fx-background-color: #4D90FE; -fx-text-fill: white;"/>
+                <Button text="Batal" fx:id="cancelButton" onAction="#handleCancel"
+                        style="-fx-border-color: black;"/>
+            </HBox>
+        </VBox>
+    </children>
+</AnchorPane>
