@@ -1,6 +1,8 @@
 package com.example.project.model;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,16 +22,20 @@ public class Database {
         }
     }
 
-    public static boolean validateLogin(String username, String password) {
-        String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
+    public static Integer validateLogin(String username, String password) {
+        String sql = "SELECT id FROM users WHERE username = ? AND password = ?";
         try (Connection conn = connect(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
             pstmt.setString(2, password);
             ResultSet rs = pstmt.executeQuery();
-            return rs.next();
+            if (rs.next()) {
+                return rs.getInt("id");
+            } else {
+                return null;
+            }
         } catch (SQLException e) {
             System.out.println("Login failed: " + e.getMessage());
-            return false;
+            return null;
         }
     }
 
@@ -41,61 +47,63 @@ public class Database {
         }
     }
 
-    public static List<Task> getAllTasks() {
+    public static List<Task> getAllTasks(int userId) {
         List<Task> tasks = new ArrayList<>();
-        String sql = "SELECT * FROM tasks";
+        String sql = "SELECT * FROM tasks WHERE user_id = ?";
 
         try (Connection conn = connect();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
                 tasks.add(extractTask(rs));
             }
 
         } catch (SQLException e) {
-            System.err.println("Gagal mengambil semua tugas: " + e.getMessage());
+            System.err.println("Gagal mengambil semua tugas untuk userId " + userId + ": " + e.getMessage());
         }
         return tasks;
     }
 
-    public static List<Task> getTasksByCompletion(boolean completed) {
+    public static List<Task> getTasksByCompletion(int userId, boolean completed) {
         List<Task> tasks = new ArrayList<>();
-        String sql = "SELECT * FROM tasks WHERE completed = ?";
+        String sql = "SELECT * FROM tasks WHERE user_id = ? AND completed = ?";
 
         try (Connection conn = connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setBoolean(1, completed);
+            stmt.setInt(1, userId);
+            stmt.setBoolean(2, completed);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 tasks.add(extractTask(rs));
             }
         } catch (SQLException e) {
-            System.err.println("Gagal mengambil tugas berdasarkan status: " + e.getMessage());
+            System.err.println("Gagal mengambil tugas berdasarkan status untuk userId " + userId + ": " + e.getMessage());
         }
         return tasks;
     }
 
-    public static boolean updateTaskCompletion(int taskId, boolean completed, int progress) {
-        String sql = "UPDATE tasks SET completed = ?, progress = ? WHERE id = ?";
+    public static boolean updateTaskCompletion(int taskId, boolean completed, int progress, int userId) {
+        String sql = "UPDATE tasks SET completed = ?, progress = ? WHERE id = ? AND user_id = ?";
         try (Connection conn = connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setBoolean(1, completed);
             stmt.setInt(2, progress);
             stmt.setInt(3, taskId);
+            stmt.setInt(4, userId);
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
         } catch (SQLException e) {
-            System.err.println("Gagal memperbarui status penyelesaian tugas ID " + taskId + ": " + e.getMessage());
+            System.err.println("Gagal memperbarui status penyelesaian tugas ID " + taskId + " untuk userId " + userId + ": " + e.getMessage());
             return false;
         }
     }
 
-    public static boolean insertTask(Task task) {
-        String sql = "INSERT INTO tasks (name, description, course, date, time, priority, progress, completed) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public static boolean insertTask(Task task, int userId) {
+        String sql = "INSERT INTO tasks (name, description, course, date, time, priority, progress, completed, reminder_offset_days, parent_id, user_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -107,19 +115,27 @@ public class Database {
             stmt.setString(6, task.getPriority());
             stmt.setInt(7, task.getProgress());
             stmt.setBoolean(8, task.isCompleted());
+            stmt.setInt(9, task.getReminderOffsetDays());
+            if (task.getParentId() != null) {
+                stmt.setInt(10, task.getParentId());
+            } else {
+                stmt.setNull(10, Types.INTEGER);
+            }
+            stmt.setInt(11, userId);
 
             stmt.executeUpdate();
-            System.out.println("Tugas berhasil disimpan ke database");
+            System.out.println("Tugas berhasil disimpan ke database untuk userId " + userId);
             return true;
         } catch (SQLException e) {
-            System.err.println("Gagal menyimpan tugas: " + e.getMessage());
+            System.err.println("Gagal menyimpan tugas untuk userId " + userId + ": " + e.getMessage());
             return false;
         }
     }
 
-    public static boolean updateTask(Task task) {
+    public static boolean updateTask(Task task, int userId) {
         String sql = "UPDATE tasks SET name = ?, description = ?, course = ?, date = ?, " +
-                "time = ?, priority = ?, progress = ?, completed = ? WHERE id = ?";
+                "time = ?, priority = ?, progress = ?, completed = ?, reminder_offset_days = ?, parent_id = ? " +
+                "WHERE id = ? AND user_id = ?";
         try (Connection conn = connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -131,30 +147,42 @@ public class Database {
             stmt.setString(6, task.getPriority());
             stmt.setInt(7, task.getProgress());
             stmt.setBoolean(8, task.isCompleted());
-            stmt.setInt(9, task.getId());
+            stmt.setInt(9, task.getReminderOffsetDays());
+            if (task.getParentId() != null) {
+                stmt.setInt(10, task.getParentId());
+            } else {
+                stmt.setNull(10, Types.INTEGER);
+            }
+            stmt.setInt(11, task.getId());
+            stmt.setInt(12, userId);
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
         } catch (SQLException e) {
-            System.err.println("Gagal mengupdate tugas ID " + task.getId() + ": " + e.getMessage());
+            System.err.println("Gagal mengupdate tugas ID " + task.getId() + " untuk userId " + userId + ": " + e.getMessage());
             return false;
         }
     }
 
-    public static boolean deleteTask(int taskId) {
-        String sql = "DELETE FROM tasks WHERE id = ?";
+    public static boolean deleteTask(int taskId, int userId) {
+        String sql = "DELETE FROM tasks WHERE id = ? AND user_id = ?";
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, taskId);
+            pstmt.setInt(2, userId);
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
         } catch (SQLException e) {
-            System.err.println("Gagal menghapus tugas ID " + taskId + ": " + e.getMessage());
+            System.err.println("Gagal menghapus tugas ID " + taskId + " untuk userId " + userId + ": " + e.getMessage());
             return false;
         }
     }
 
     private static Task extractTask(ResultSet rs) throws SQLException {
+        Integer parentId = rs.getInt("parent_id");
+        if (rs.wasNull()) {
+            parentId = null;
+        }
         return new Task(
                 rs.getInt("id"),
                 rs.getString("name"),
@@ -164,7 +192,60 @@ public class Database {
                 rs.getString("time"),
                 rs.getString("priority"),
                 rs.getInt("progress"),
-                rs.getBoolean("completed")
+                rs.getBoolean("completed"),
+                rs.getInt("reminder_offset_days"),
+                parentId
         );
+    }
+
+    public static List<Task> getTasksDueForReminderToday(int userId) {
+        List<Task> tasksToRemind = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        String sql = "SELECT * FROM tasks WHERE completed = 0 AND reminder_offset_days > 0 AND user_id = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Task task = extractTask(rs);
+                if (task.getDate() != null && !task.getDate().isEmpty()) {
+                    try {
+                        LocalDate deadlineDate = LocalDate.parse(task.getDate());
+                        LocalDate reminderDate = deadlineDate.minusDays(task.getReminderOffsetDays());
+
+                        if (reminderDate.isEqual(today)) {
+                            tasksToRemind.add(task);
+                        }
+                    } catch (DateTimeParseException e) {
+                        System.err.println("Format tanggal salah untuk tugas ID " + task.getId() + ": " + task.getDate() + " - " + e.getMessage());
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Gagal mengambil tugas untuk pengingat userId " + userId + ": " + e.getMessage());
+        }
+        return tasksToRemind;
+    }
+
+    public static List<Task> getSubTasks(int parentId, int userId) {
+        List<Task> subTasks = new ArrayList<>();
+        String sql = "SELECT * FROM tasks WHERE parent_id = ? AND user_id = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, parentId);
+            stmt.setInt(2, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                subTasks.add(extractTask(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Gagal mengambil sub-tugas untuk parent_id " + parentId + " dan userId " + userId + ": " + e.getMessage());
+        }
+        return subTasks;
     }
 }

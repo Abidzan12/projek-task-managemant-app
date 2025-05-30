@@ -1,4 +1,3 @@
-
 package com.example.project.model;
 
 public class Task {
@@ -11,9 +10,12 @@ public class Task {
     private String priority;
     private int progress;
     private boolean completed;
+    private int reminderOffsetDays;
+    private Integer parentId;
 
     public Task(int id, String name, String description, String course, String date,
-                String time, String priority, int progress, boolean completed) {
+                String time, String priority, int progress, boolean completed,
+                int reminderOffsetDays, Integer parentId) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -23,53 +25,113 @@ public class Task {
         this.priority = priority;
         this.progress = progress;
         this.completed = completed;
+        this.reminderOffsetDays = reminderOffsetDays;
+        this.parentId = parentId;
     }
+
+    public Task(int id, String name, String description, String course, String date,
+                String time, String priority, int progress, boolean completed, int reminderOffsetDays) {
+        this(id, name, description, course, date, time, priority, progress, completed, reminderOffsetDays, null);
+    }
+
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getCourse() {
         return course;
     }
 
+    public void setCourse(String course) {
+        this.course = course;
+    }
+
     public String getDate() {
         return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 
     public String getTime() {
         return time;
     }
 
+    public void setTime(String time) {
+        this.time = time;
+    }
+
     public String getPriority() {
         return priority;
+    }
+
+    public void setPriority(String priority) {
+        this.priority = priority;
     }
 
     public int getProgress() {
         return progress;
     }
 
+    public void setProgress(int progress) {
+        this.progress = progress;
+        if (this.progress == 100) {
+            this.completed = true;
+        } else if (this.progress < 100 && this.completed) {
+            this.completed = false;
+        }
+    }
+
     public boolean isCompleted() {
         return completed;
     }
 
-    public String getStatus() {
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+        if (this.completed) {
+            this.progress = 100;
+        }
+    }
+
+    public String getStatusDisplay() {
         return completed ? "Selesai" : "Belum Selesai";
     }
 
-    public void setProgress(int progress) {
-        this.progress = progress;
+    public int getReminderOffsetDays() {
+        return reminderOffsetDays;
     }
 
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
+    public void setReminderOffsetDays(int reminderOffsetDays) {
+        this.reminderOffsetDays = reminderOffsetDays;
+    }
+
+    public Integer getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Integer parentId) {
+        this.parentId = parentId;
     }
 }

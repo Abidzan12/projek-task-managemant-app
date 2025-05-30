@@ -1,20 +1,35 @@
 package com.example.project;
 
+import com.example.project.model.Database;
+import com.example.project.model.Task;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import org.controlsfx.control.Notifications;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class App extends Application {
 
     private static Scene scene;
+    private static Stage primaryStageRef;
+    private ScheduledExecutorService reminderScheduler;
+    private static Integer currentUserId = null;
 
     @Override
     public void start(Stage stage) throws IOException {
+        primaryStageRef = stage;
         Parent root = loadFXML("login");
         scene = new Scene(root);
 
@@ -31,6 +46,16 @@ public class App extends Application {
         stage.setScene(scene);
         stage.setTitle("Task Manager");
         stage.show();
+
+        startReminderService();
+    }
+
+    public static void setCurrentUserId(Integer userId) {
+        currentUserId = userId;
+    }
+
+    public static Integer getCurrentUserId() {
+        return currentUserId;
     }
 
     public static void setRoot(String fxml) throws IOException {
@@ -54,6 +79,69 @@ public class App extends Application {
 
         FXMLLoader loader = new FXMLLoader(fxmlLocation);
         return loader.load();
+    }
+
+    public static void showDesktopNotification(Task task) {
+        Platform.runLater(() -> {
+            String title = "Pengingat Tugas!";
+            String message = "Tugas: \"" + task.getName() + "\"" +
+                    (task.getCourse() != null && !task.getCourse().isEmpty() ? "\nMata Kuliah: " + task.getCourse() : "") +
+                    "\nJatuh tempo: " + task.getDate() +
+                    (task.getTime() != null && !task.getTime().isEmpty() ? " pukul " + task.getTime() : "");
+
+            Notifications notificationBuilder = Notifications.create()
+                    .title(title)
+                    .text(message)
+                    .graphic(null)
+                    .position(Pos.BOTTOM_RIGHT)
+                    .hideAfter(Duration.seconds(15))
+                    .onAction(event -> {
+                        System.out.println("Notifikasi untuk '" + task.getName() + "' diklik!");
+                        if (primaryStageRef != null) {
+                            primaryStageRef.setIconified(false);
+                            primaryStageRef.toFront();
+                        }
+                    });
+
+            notificationBuilder.showInformation();
+        });
+    }
+
+    public void startReminderService() {
+        reminderScheduler = Executors.newSingleThreadScheduledExecutor();
+        reminderScheduler.scheduleAtFixedRate(() -> {
+            Platform.runLater(() -> {
+                Integer userId = getCurrentUserId();
+                if (userId != null) {
+                    System.out.println("Scheduler: Pemeriksaan pengingat berjalan pada - " + java.time.LocalDateTime.now() + " untuk User ID: " + userId);
+                    List<Task> tasksToRemind = Database.getTasksDueForReminderToday(userId);
+                    if (tasksToRemind != null && !tasksToRemind.isEmpty()) {
+                        for (Task taskToRemind : tasksToRemind) {
+                            showDesktopNotification(taskToRemind);
+                        }
+                    } else {
+                        System.out.println("Scheduler: Tidak ada tugas untuk diingatkan saat ini untuk User ID: " + userId);
+                    }
+                } else {
+                    System.out.println("Scheduler: Tidak ada pengguna yang login, pemeriksaan pengingat dilewati.");
+                }
+            });
+        }, 0, 1, TimeUnit.HOURS);
+    }
+
+    @Override
+    public void stop() throws Exception {
+        System.out.println("Aplikasi berhenti, mematikan scheduler pengingat.");
+        if (reminderScheduler != null && !reminderScheduler.isShutdown()) {
+            reminderScheduler.shutdownNow();
+        }
+        super.stop();
+    }
+
+    public static void testNotification() {
+        Task testTask = new Task(999, "Meeting Proyek Penting", "Diskusi progres mingguan", "Proyek Akhir",
+                LocalDate.now().plusDays(1).toString(), "14:00", "Tinggi", 0, false, 1, null);
+        showDesktopNotification(testTask);
     }
 
     public static void main(String[] args) {

@@ -2,6 +2,7 @@ package com.example.project.controller;
 
 import com.example.project.model.Database;
 import com.example.project.model.Task;
+import com.example.project.App;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
@@ -16,7 +17,7 @@ public class AddTaskController {
     @FXML
     private TextField matkulField;
     @FXML
-    private DatePicker tanggalPicker; // Mengganti TextField dengan DatePicker
+    private DatePicker tanggalPicker;
     @FXML
     private TextField waktuField;
     @FXML
@@ -24,27 +25,50 @@ public class AddTaskController {
     @FXML
     private Slider progressSlider;
     @FXML
-    private Label progressLabel; // Label untuk menampilkan nilai progress
+    private Label progressLabel;
+    @FXML
+    private Spinner<Integer> reminderOffsetSpinner;
     @FXML
     private Button saveButton;
     @FXML
     private Button cancelButton;
+    @FXML
+    private Label parentTaskInfoLabel;
 
     private Task taskToEdit = null;
     private boolean editMode = false;
+    private Integer parentIdForNewTask = null;
 
     @FXML
     public void initialize() {
         prioritasBox.getItems().addAll("Rendah", "Sedang", "Tinggi");
+
         progressSlider.valueProperty().addListener((obs, oldVal, newVal) ->
                 progressLabel.setText(String.format("%d%%", newVal.intValue())));
         progressLabel.setText(String.format("%d%%", (int)progressSlider.getValue()));
+
+        SpinnerValueFactory<Integer> reminderValueFactory =
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 30, 0, 1);
+        reminderOffsetSpinner.setValueFactory(reminderValueFactory);
+        reminderOffsetSpinner.setEditable(true);
+
+        if (parentTaskInfoLabel != null) {
+            parentTaskInfoLabel.setVisible(false);
+            parentTaskInfoLabel.setManaged(false);
+        }
     }
 
     public void setEditTask(Task task) {
+        this.parentIdForNewTask = null;
+        if (parentTaskInfoLabel != null) {
+            parentTaskInfoLabel.setVisible(false);
+            parentTaskInfoLabel.setManaged(false);
+        }
+
         if (task != null) {
             this.taskToEdit = task;
             this.editMode = true;
+            this.parentIdForNewTask = task.getParentId();
 
             namaField.setText(task.getName());
             deskripsiField.setText(task.getDescription());
@@ -56,21 +80,56 @@ public class AddTaskController {
                     System.err.println("Format tanggal salah saat memuat tugas: " + task.getDate());
                     tanggalPicker.setValue(null);
                 }
+            } else {
+                tanggalPicker.setValue(null);
             }
             waktuField.setText(task.getTime());
             prioritasBox.setValue(task.getPriority());
             progressSlider.setValue(task.getProgress());
             progressLabel.setText(String.format("%d%%", task.getProgress()));
+
+            if (reminderOffsetSpinner.getValueFactory() != null) {
+                reminderOffsetSpinner.getValueFactory().setValue(task.getReminderOffsetDays());
+            }
+
             saveButton.setText("Update Tugas");
         } else {
             this.editMode = false;
             this.taskToEdit = null;
             saveButton.setText("Simpan Tugas");
-            // Anda bisa mengosongkan field di sini jika form ini juga dipakai untuk 'Tambah Baru' setelah mode edit
-            // namaField.clear();
-            // deskripsiField.clear();
-            // ... dan seterusnya
+            clearFields();
         }
+    }
+
+    public void setParentTaskInfo(Integer parentId, String parentName) {
+        this.parentIdForNewTask = parentId;
+        this.editMode = false;
+        this.taskToEdit = null;
+        saveButton.setText("Simpan Sub-Tugas");
+        clearFields();
+
+        if (parentId != null && parentTaskInfoLabel != null) {
+            parentTaskInfoLabel.setText("Sub-tugas dari: " + parentName);
+            parentTaskInfoLabel.setVisible(true);
+            parentTaskInfoLabel.setManaged(true);
+        } else if (parentTaskInfoLabel != null) {
+            parentTaskInfoLabel.setVisible(false);
+            parentTaskInfoLabel.setManaged(false);
+        }
+    }
+
+    private void clearFields() {
+        namaField.clear();
+        deskripsiField.clear();
+        matkulField.clear();
+        tanggalPicker.setValue(null);
+        waktuField.clear();
+        prioritasBox.getSelectionModel().clearSelection();
+        if (reminderOffsetSpinner.getValueFactory() != null) {
+            reminderOffsetSpinner.getValueFactory().setValue(0);
+        }
+        progressSlider.setValue(0);
+        progressLabel.setText("0%");
     }
 
     @FXML
@@ -86,17 +145,22 @@ public class AddTaskController {
         String prioritas = prioritasBox.getValue();
         int progress = (int) progressSlider.getValue();
         boolean completed = (progress == 100);
+        int reminderOffset = reminderOffsetSpinner.getValue();
+
+        Integer currentUserId = App.getCurrentUserId();
+        if (currentUserId == null) {
+            showAlert("Error", "Sesi pengguna tidak ditemukan. Silakan login kembali.");
+            return;
+        }
 
         if (nama.isEmpty() || prioritas == null || prioritas.isEmpty()) {
             showAlert("Peringatan", "Nama dan Prioritas harus diisi.");
             return;
         }
-
         if (tanggal.isEmpty()) {
             showAlert("Peringatan", "Tanggal harus diisi.");
             return;
         }
-
 
         if (editMode && taskToEdit != null) {
             Task updatedTask = new Task(
@@ -108,9 +172,11 @@ public class AddTaskController {
                     waktu,
                     prioritas,
                     progress,
-                    completed
+                    completed,
+                    reminderOffset,
+                    taskToEdit.getParentId()
             );
-            boolean success = Database.updateTask(updatedTask);
+            boolean success = Database.updateTask(updatedTask, currentUserId);
             if (success) {
                 showAlert("Sukses", "Tugas berhasil diupdate.");
             } else {
@@ -126,9 +192,11 @@ public class AddTaskController {
                     waktu,
                     prioritas,
                     progress,
-                    completed
+                    completed,
+                    reminderOffset,
+                    this.parentIdForNewTask
             );
-            boolean success = Database.insertTask(newTask);
+            boolean success = Database.insertTask(newTask, currentUserId);
             if (success) {
                 showAlert("Sukses", "Tugas berhasil disimpan.");
             } else {

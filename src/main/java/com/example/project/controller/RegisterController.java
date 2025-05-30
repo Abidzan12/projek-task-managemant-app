@@ -8,6 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage; // Import Stage
 
 import java.io.IOException;
 
@@ -24,7 +25,7 @@ public class RegisterController {
 
     @FXML
     protected void handleRegister(ActionEvent event) {
-        String email = emailField.getText();
+        String email = emailField.getText().trim();
         String password = passwordField.getText();
 
         if (email.isEmpty() || password.isEmpty()) {
@@ -47,6 +48,10 @@ public class RegisterController {
     protected void goToLogin(ActionEvent event) {
         try {
             App.setRoot("login");
+            Stage stage = (Stage) emailField.getScene().getWindow(); // Ambil stage
+            if (stage != null) {
+                stage.setTitle("Login"); // Atur judul
+            }
         } catch (IOException e) {
             e.printStackTrace();
             if (statusLabel != null) {
