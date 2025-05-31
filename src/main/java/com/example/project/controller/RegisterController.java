@@ -47,10 +47,13 @@ public class RegisterController {
     @FXML
     protected void goToLogin(ActionEvent event) {
         try {
-            App.setRoot("login");
-            Stage stage = (Stage) emailField.getScene().getWindow(); // Ambil stage
-            if (stage != null) {
-                stage.setTitle("Login"); // Atur judul
+            // Ambil Stage SEBELUM mengganti root scene
+            Stage stage = (Stage) emailField.getScene().getWindow();
+
+            App.setRoot("login"); // Ganti root scene
+
+            if (stage != null) { // Gunakan referensi stage yang sudah diambil
+                stage.setTitle("Login");
             }
         } catch (IOException e) {
             e.printStackTrace();
