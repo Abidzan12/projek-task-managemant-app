@@ -3,10 +3,12 @@ package com.example.project.controller;
 import com.example.project.App;
 import com.example.project.model.Database;
 import com.example.project.model.Task;
+import javafx.application.HostServices;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
@@ -22,8 +24,11 @@ import javafx.stage.Stage;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +45,7 @@ public class DashboardController {
     @FXML private TreeTableColumn<Task, String> colStatus;
     @FXML private TreeTableColumn<Task, Integer> colProgress;
     @FXML private TreeTableColumn<Task, Void> colAction;
+    @FXML private TreeTableColumn<Task, String> colAttachment; // Kolom baru untuk indikator lampiran
 
     @FXML private Button btnAddTask;
     @FXML private Button btnShowAll;
@@ -48,10 +54,14 @@ public class DashboardController {
 
     private static Stage addTaskStage = null;
     private Integer currentUserId;
+    private HostServices hostServices;
+
 
     @FXML
     public void initialize() {
         this.currentUserId = App.getCurrentUserId();
+        this.hostServices = App.getHostServicesInstance(); // Ambil HostServices dari App
+
         if (this.currentUserId == null) {
             showErrorDialog("Error Sesi Pengguna", "Tidak dapat memuat data tugas. Sesi pengguna tidak ditemukan. Silakan login ulang.");
             try {
@@ -76,8 +86,45 @@ public class DashboardController {
         colPriority.setCellValueFactory(new TreeItemPropertyValueFactory<>("priority"));
         colProgress.setCellValueFactory(new TreeItemPropertyValueFactory<>("progress"));
         colStatus.setCellValueFactory(new TreeItemPropertyValueFactory<>("statusDisplay"));
+        setupAttachmentColumn();
         setupActionButtonsWithIkonli();
     }
+
+    private void setupAttachmentColumn() {
+        colAttachment.setCellValueFactory(new TreeItemPropertyValueFactory<>("attachmentOriginalName"));
+        Callback<TreeTableColumn<Task, String>, TreeTableCell<Task, String>> cellFactory = param -> {
+            final TreeTableCell<Task, String> cell = new TreeTableCell<>() {
+                private final FontIcon attachmentIcon = new FontIcon(FontAwesomeSolid.PAPERCLIP);
+
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null || item.isEmpty()) {
+                        setGraphic(null);
+                        setText(null);
+                        setTooltip(null);
+                    } else {
+                        attachmentIcon.setIconSize(16);
+                        attachmentIcon.setIconColor(Color.SLATEGRAY);
+                        setGraphic(attachmentIcon);
+                        setText(null); // Atau tampilkan nama file: setText(item)
+                        setTooltip(new Tooltip("Lihat lampiran: " + item));
+                        this.setCursor(Cursor.HAND);
+                        this.setOnMouseClicked(event -> {
+                            TreeItem<Task> treeItem = getTreeTableView().getTreeItem(getIndex());
+                            if (treeItem != null && treeItem.getValue() != null) {
+                                handleOpenAttachment(treeItem.getValue());
+                            }
+                        });
+                    }
+                }
+            };
+            return cell;
+        };
+        colAttachment.setCellFactory(cellFactory);
+        colAttachment.setStyle("-fx-alignment: CENTER;");
+    }
+
 
     private void loadTasksAndBuildTree() {
         if (currentUserId == null) return;
@@ -172,6 +219,23 @@ public class DashboardController {
         colAction.setCellFactory(cellFactory);
     }
 
+    private void handleOpenAttachment(Task task) {
+        if (hostServices == null) {
+            showErrorDialog("Error Aplikasi", "Tidak dapat membuka file lampiran (HostServices tidak tersedia).");
+            return;
+        }
+        if (task.getAttachmentStoredName() != null && !task.getAttachmentStoredName().isEmpty()) {
+            File fileToOpen = new File("data/attachments/" + task.getAttachmentStoredName());
+            if (fileToOpen.exists()) {
+                hostServices.showDocument(fileToOpen.toURI().toString());
+            } else {
+                showErrorDialog("File Tidak Ditemukan", "File lampiran '" + task.getAttachmentOriginalName() + "' tidak ditemukan di disk.");
+            }
+        } else {
+            showErrorDialog("Tidak Ada Lampiran", "Tugas ini tidak memiliki lampiran.");
+        }
+    }
+
     private void handleAddSubTask(Task parentTask) {
         if (currentUserId == null) {
             showErrorDialog("Error Sesi", "Sesi pengguna tidak valid.");
@@ -252,8 +316,18 @@ public class DashboardController {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             Integer parentIdOfDeletedTask = task.getParentId();
+            String storedAttachmentName = task.getAttachmentStoredName();
+
             boolean success = Database.deleteTask(task.getId(), currentUserId);
             if (success) {
+                if (storedAttachmentName != null && !storedAttachmentName.isEmpty()) {
+                    try {
+                        Files.deleteIfExists(Paths.get("data/attachments/" + storedAttachmentName));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        showErrorDialog("Error Hapus File", "Gagal menghapus file lampiran dari disk.");
+                    }
+                }
                 checkAndUpdateParentTaskProgress(parentIdOfDeletedTask);
                 loadTasksAndBuildTree();
             } else {
@@ -374,9 +448,9 @@ public class DashboardController {
             TreeItem<Task> currentItem = taskMap.get(task.getId());
             if (task.getParentId() != null && taskMap.containsKey(task.getParentId())) {
                 TreeItem<Task> parentItem = taskMap.get(task.getParentId());
-                if (parentItem != null) { // Pastikan parent ada di map (misalnya jika parent tidak cocok filter)
+                if (parentItem != null) {
                     parentItem.getChildren().add(currentItem);
-                } else { // Jika parent tidak ada di list (karena filter), jadikan top level
+                } else {
                     rootItem.getChildren().add(currentItem);
                 }
             } else {

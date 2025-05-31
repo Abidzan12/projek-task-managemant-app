@@ -46,6 +46,7 @@
                     <RowConstraints minHeight="35.0" prefHeight="35.0" />
                     <RowConstraints minHeight="35.0" prefHeight="35.0" />
                     <RowConstraints minHeight="35.0" prefHeight="35.0" />
+                    <RowConstraints minHeight="35.0" prefHeight="35.0" />
                 </rowConstraints>
                 <children>
                     <Label text="Nama:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
@@ -74,6 +75,15 @@
                         <children>
                             <Slider fx:id="progressSlider" max="100" min="0" value="0" HBox.hgrow="ALWAYS" />
                             <Label fx:id="progressLabel" minWidth="40.0" text="0%" />
+                        </children>
+                    </HBox>
+
+                    <Label text="Lampiran:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                    <HBox spacing="10.0" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="5" GridPane.columnSpan="3">
+                        <children>
+                            <Button fx:id="chooseFileButton" text="Pilih File..." onAction="#handleChooseFile"/>
+                            <Label fx:id="attachmentNameLabel" text="Tidak ada file dipilih" HBox.hgrow="ALWAYS"/>
+                            <Button fx:id="removeAttachmentButton" text="X" onAction="#handleRemoveAttachment" visible="false" managed="false" style="-fx-background-color: #ff6666; -fx-text-fill: white; -fx-font-weight: bold;"/>
                         </children>
                     </HBox>
                 </children>

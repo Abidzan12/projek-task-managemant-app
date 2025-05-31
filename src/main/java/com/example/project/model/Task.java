@@ -12,10 +12,13 @@ public class Task {
     private boolean completed;
     private int reminderOffsetDays;
     private Integer parentId;
+    private String attachmentStoredName;
+    private String attachmentOriginalName;
 
     public Task(int id, String name, String description, String course, String date,
                 String time, String priority, int progress, boolean completed,
-                int reminderOffsetDays, Integer parentId) {
+                int reminderOffsetDays, Integer parentId,
+                String attachmentStoredName, String attachmentOriginalName) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -27,11 +30,18 @@ public class Task {
         this.completed = completed;
         this.reminderOffsetDays = reminderOffsetDays;
         this.parentId = parentId;
+        this.attachmentStoredName = attachmentStoredName;
+        this.attachmentOriginalName = attachmentOriginalName;
+    }
+
+    public Task(int id, String name, String description, String course, String date,
+                String time, String priority, int progress, boolean completed, int reminderOffsetDays, Integer parentId) {
+        this(id, name, description, course, date, time, priority, progress, completed, reminderOffsetDays, parentId, null, null);
     }
 
     public Task(int id, String name, String description, String course, String date,
                 String time, String priority, int progress, boolean completed, int reminderOffsetDays) {
-        this(id, name, description, course, date, time, priority, progress, completed, reminderOffsetDays, null);
+        this(id, name, description, course, date, time, priority, progress, completed, reminderOffsetDays, null, null, null);
     }
 
 
@@ -133,5 +143,21 @@ public class Task {
 
     public void setParentId(Integer parentId) {
         this.parentId = parentId;
+    }
+
+    public String getAttachmentStoredName() {
+        return attachmentStoredName;
+    }
+
+    public void setAttachmentStoredName(String attachmentStoredName) {
+        this.attachmentStoredName = attachmentStoredName;
+    }
+
+    public String getAttachmentOriginalName() {
+        return attachmentOriginalName;
+    }
+
+    public void setAttachmentOriginalName(String attachmentOriginalName) {
+        this.attachmentOriginalName = attachmentOriginalName;
     }
 }

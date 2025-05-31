@@ -3,6 +3,7 @@ package com.example.project;
 import com.example.project.model.Database;
 import com.example.project.model.Task;
 import javafx.application.Application;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
@@ -11,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.controlsfx.control.Notifications;
+// import org.controlsfx.control.Action; // Dihapus karena tidak digunakan
 
 import java.io.IOException;
 import java.net.URL;
@@ -26,10 +28,13 @@ public class App extends Application {
     private static Stage primaryStageRef;
     private ScheduledExecutorService reminderScheduler;
     private static Integer currentUserId = null;
+    private static HostServices hostServicesInstance;
 
     @Override
     public void start(Stage stage) throws IOException {
         primaryStageRef = stage;
+        hostServicesInstance = getHostServices();
+
         Parent root = loadFXML("login");
         scene = new Scene(root);
 
@@ -48,6 +53,10 @@ public class App extends Application {
         stage.show();
 
         startReminderService();
+    }
+
+    public static HostServices getHostServicesInstance() {
+        return hostServicesInstance;
     }
 
     public static void setCurrentUserId(Integer userId) {
@@ -94,14 +103,15 @@ public class App extends Application {
                     .text(message)
                     .graphic(null)
                     .position(Pos.BOTTOM_RIGHT)
-                    .hideAfter(Duration.seconds(15))
-                    .onAction(event -> {
+                    .hideAfter(Duration.seconds(15)) // Durasi bisa disesuaikan
+                    .onAction(event -> { // Aksi default saat notifikasi diklik
                         System.out.println("Notifikasi untuk '" + task.getName() + "' diklik!");
                         if (primaryStageRef != null) {
                             primaryStageRef.setIconified(false);
                             primaryStageRef.toFront();
                         }
                     });
+            // Pemanggilan .actions(...) dihapus
 
             notificationBuilder.showInformation();
         });
@@ -140,7 +150,7 @@ public class App extends Application {
 
     public static void testNotification() {
         Task testTask = new Task(999, "Meeting Proyek Penting", "Diskusi progres mingguan", "Proyek Akhir",
-                LocalDate.now().plusDays(1).toString(), "14:00", "Tinggi", 0, false, 1, null);
+                LocalDate.now().plusDays(1).toString(), "14:00", "Tinggi", 0, false, 1, null, null, null);
         showDesktopNotification(testTask);
     }
 

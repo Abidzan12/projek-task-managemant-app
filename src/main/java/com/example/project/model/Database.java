@@ -102,8 +102,8 @@ public class Database {
     }
 
     public static boolean insertTask(Task task, int userId) {
-        String sql = "INSERT INTO tasks (name, description, course, date, time, priority, progress, completed, reminder_offset_days, parent_id, user_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO tasks (name, description, course, date, time, priority, progress, completed, reminder_offset_days, parent_id, user_id, attachment_stored_name, attachment_original_name) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -122,6 +122,8 @@ public class Database {
                 stmt.setNull(10, Types.INTEGER);
             }
             stmt.setInt(11, userId);
+            stmt.setString(12, task.getAttachmentStoredName());
+            stmt.setString(13, task.getAttachmentOriginalName());
 
             stmt.executeUpdate();
             System.out.println("Tugas berhasil disimpan ke database untuk userId " + userId);
@@ -134,7 +136,8 @@ public class Database {
 
     public static boolean updateTask(Task task, int userId) {
         String sql = "UPDATE tasks SET name = ?, description = ?, course = ?, date = ?, " +
-                "time = ?, priority = ?, progress = ?, completed = ?, reminder_offset_days = ?, parent_id = ? " +
+                "time = ?, priority = ?, progress = ?, completed = ?, reminder_offset_days = ?, parent_id = ?, " +
+                "attachment_stored_name = ?, attachment_original_name = ? " +
                 "WHERE id = ? AND user_id = ?";
         try (Connection conn = connect();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -153,8 +156,10 @@ public class Database {
             } else {
                 stmt.setNull(10, Types.INTEGER);
             }
-            stmt.setInt(11, task.getId());
-            stmt.setInt(12, userId);
+            stmt.setString(11, task.getAttachmentStoredName());
+            stmt.setString(12, task.getAttachmentOriginalName());
+            stmt.setInt(13, task.getId());
+            stmt.setInt(14, userId);
 
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
@@ -183,6 +188,9 @@ public class Database {
         if (rs.wasNull()) {
             parentId = null;
         }
+        String attachmentStoredName = rs.getString("attachment_stored_name");
+        String attachmentOriginalName = rs.getString("attachment_original_name");
+
         return new Task(
                 rs.getInt("id"),
                 rs.getString("name"),
@@ -194,7 +202,9 @@ public class Database {
                 rs.getInt("progress"),
                 rs.getBoolean("completed"),
                 rs.getInt("reminder_offset_days"),
-                parentId
+                parentId,
+                attachmentStoredName,
+                attachmentOriginalName
         );
     }
 

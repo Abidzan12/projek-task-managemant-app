@@ -3,10 +3,20 @@ package com.example.project.controller;
 import com.example.project.model.Database;
 import com.example.project.model.Task;
 import com.example.project.App;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.util.UUID;
 
 public class AddTaskController {
 
@@ -34,10 +44,21 @@ public class AddTaskController {
     private Button cancelButton;
     @FXML
     private Label parentTaskInfoLabel;
+    @FXML
+    private Button chooseFileButton;
+    @FXML
+    private Label attachmentNameLabel;
+    @FXML
+    private Button removeAttachmentButton;
 
     private Task taskToEdit = null;
     private boolean editMode = false;
     private Integer parentIdForNewTask = null;
+    private File selectedAttachmentFile = null;
+    private String existingStoredAttachmentName = null;
+    private boolean attachmentActionTaken = false;
+
+    private final String ATTACHMENTS_DIR = "data/attachments/";
 
     @FXML
     public void initialize() {
@@ -56,10 +77,13 @@ public class AddTaskController {
             parentTaskInfoLabel.setVisible(false);
             parentTaskInfoLabel.setManaged(false);
         }
+        updateAttachmentUI(null, null);
     }
 
     public void setEditTask(Task task) {
         this.parentIdForNewTask = null;
+        this.selectedAttachmentFile = null;
+        this.attachmentActionTaken = false;
         if (parentTaskInfoLabel != null) {
             parentTaskInfoLabel.setVisible(false);
             parentTaskInfoLabel.setManaged(false);
@@ -69,6 +93,7 @@ public class AddTaskController {
             this.taskToEdit = task;
             this.editMode = true;
             this.parentIdForNewTask = task.getParentId();
+            this.existingStoredAttachmentName = task.getAttachmentStoredName();
 
             namaField.setText(task.getName());
             deskripsiField.setText(task.getDescription());
@@ -91,11 +116,12 @@ public class AddTaskController {
             if (reminderOffsetSpinner.getValueFactory() != null) {
                 reminderOffsetSpinner.getValueFactory().setValue(task.getReminderOffsetDays());
             }
-
+            updateAttachmentUI(task.getAttachmentOriginalName(), task.getAttachmentStoredName());
             saveButton.setText("Update Tugas");
         } else {
             this.editMode = false;
             this.taskToEdit = null;
+            this.existingStoredAttachmentName = null;
             saveButton.setText("Simpan Tugas");
             clearFields();
         }
@@ -105,6 +131,9 @@ public class AddTaskController {
         this.parentIdForNewTask = parentId;
         this.editMode = false;
         this.taskToEdit = null;
+        this.selectedAttachmentFile = null;
+        this.existingStoredAttachmentName = null;
+        this.attachmentActionTaken = false;
         saveButton.setText("Simpan Sub-Tugas");
         clearFields();
 
@@ -130,6 +159,51 @@ public class AddTaskController {
         }
         progressSlider.setValue(0);
         progressLabel.setText("0%");
+        this.selectedAttachmentFile = null;
+        this.attachmentActionTaken = false;
+        updateAttachmentUI(null, null);
+    }
+
+    @FXML
+    private void handleChooseFile(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Pilih File Lampiran");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Semua File", "*.*"),
+                new FileChooser.ExtensionFilter("Gambar", "*.png", "*.jpg", "*.jpeg", "*.gif"),
+                new FileChooser.ExtensionFilter("Dokumen PDF", "*.pdf"),
+                new FileChooser.ExtensionFilter("Dokumen Word", "*.doc", "*.docx"),
+                new FileChooser.ExtensionFilter("Dokumen Teks", "*.txt")
+        );
+        File file = fileChooser.showOpenDialog(chooseFileButton.getScene().getWindow());
+        if (file != null) {
+            this.selectedAttachmentFile = file;
+            this.attachmentActionTaken = true;
+            updateAttachmentUI(file.getName(), null);
+        }
+    }
+
+    @FXML
+    private void handleRemoveAttachment(ActionEvent event) {
+        this.selectedAttachmentFile = null;
+        this.attachmentActionTaken = true;
+        updateAttachmentUI(null, null);
+    }
+
+    private void updateAttachmentUI(String originalNameFromTask, String storedNameFromTask) {
+        if (selectedAttachmentFile != null) {
+            attachmentNameLabel.setText(selectedAttachmentFile.getName());
+            removeAttachmentButton.setVisible(true);
+            removeAttachmentButton.setManaged(true);
+        } else if (editMode && originalNameFromTask != null && !originalNameFromTask.isEmpty() && !attachmentActionTaken) {
+            attachmentNameLabel.setText(originalNameFromTask);
+            removeAttachmentButton.setVisible(true);
+            removeAttachmentButton.setManaged(true);
+        } else {
+            attachmentNameLabel.setText("Tidak ada file dipilih");
+            removeAttachmentButton.setVisible(false);
+            removeAttachmentButton.setManaged(false);
+        }
     }
 
     @FXML
@@ -162,46 +236,63 @@ public class AddTaskController {
             return;
         }
 
+        String finalStoredAttachmentName = null;
+        String finalOriginalAttachmentName = null;
+
+        try {
+            File attachmentsDirFile = new File(ATTACHMENTS_DIR);
+            if (!attachmentsDirFile.exists()) {
+                attachmentsDirFile.mkdirs();
+            }
+
+            if (attachmentActionTaken && selectedAttachmentFile == null) {
+                if (existingStoredAttachmentName != null) {
+                    Files.deleteIfExists(Paths.get(ATTACHMENTS_DIR + existingStoredAttachmentName));
+                }
+                finalStoredAttachmentName = null;
+                finalOriginalAttachmentName = null;
+            } else if (selectedAttachmentFile != null) {
+                if (editMode && existingStoredAttachmentName != null) {
+                    Files.deleteIfExists(Paths.get(ATTACHMENTS_DIR + existingStoredAttachmentName));
+                }
+                String originalFileName = selectedAttachmentFile.getName();
+                String fileExtension = "";
+                int i = originalFileName.lastIndexOf('.');
+                if (i > 0 && i < originalFileName.length() - 1) {
+                    fileExtension = originalFileName.substring(i);
+                }
+                finalStoredAttachmentName = UUID.randomUUID().toString() + fileExtension;
+                finalOriginalAttachmentName = originalFileName;
+                Files.copy(selectedAttachmentFile.toPath(), Paths.get(ATTACHMENTS_DIR + finalStoredAttachmentName), StandardCopyOption.REPLACE_EXISTING);
+            } else if (editMode && taskToEdit != null) {
+                finalStoredAttachmentName = taskToEdit.getAttachmentStoredName();
+                finalOriginalAttachmentName = taskToEdit.getAttachmentOriginalName();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Error File", "Gagal menyimpan atau menghapus file lampiran.");
+            return;
+        }
+
         if (editMode && taskToEdit != null) {
             Task updatedTask = new Task(
-                    taskToEdit.getId(),
-                    nama,
-                    deskripsi,
-                    matkul,
-                    tanggal,
-                    waktu,
-                    prioritas,
-                    progress,
-                    completed,
-                    reminderOffset,
-                    taskToEdit.getParentId()
+                    taskToEdit.getId(), nama, deskripsi, matkul, tanggal,
+                    waktu, prioritas, progress, completed, reminderOffset,
+                    taskToEdit.getParentId(), finalStoredAttachmentName, finalOriginalAttachmentName
             );
             boolean success = Database.updateTask(updatedTask, currentUserId);
-            if (success) {
-                showAlert("Sukses", "Tugas berhasil diupdate.");
-            } else {
-                showAlert("Gagal", "Gagal mengupdate tugas di database.");
-            }
+            if (success) showAlert("Sukses", "Tugas berhasil diupdate.");
+            else showAlert("Gagal", "Gagal mengupdate tugas di database.");
         } else {
             Task newTask = new Task(
-                    0,
-                    nama,
-                    deskripsi,
-                    matkul,
-                    tanggal,
-                    waktu,
-                    prioritas,
-                    progress,
-                    completed,
-                    reminderOffset,
-                    this.parentIdForNewTask
+                    0, nama, deskripsi, matkul, tanggal,
+                    waktu, prioritas, progress, completed, reminderOffset,
+                    this.parentIdForNewTask, finalStoredAttachmentName, finalOriginalAttachmentName
             );
             boolean success = Database.insertTask(newTask, currentUserId);
-            if (success) {
-                showAlert("Sukses", "Tugas berhasil disimpan.");
-            } else {
-                showAlert("Gagal", "Gagal menyimpan tugas ke database.");
-            }
+            if (success) showAlert("Sukses", "Tugas berhasil disimpan.");
+            else showAlert("Gagal", "Gagal menyimpan tugas ke database.");
         }
         closeWindow();
     }
