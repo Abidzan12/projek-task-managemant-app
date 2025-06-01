@@ -10,92 +10,122 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Priority?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.controller.AddTaskController">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.controller.AddTaskController" styleClass="add-task-pane">
     <children>
-        <VBox alignment="TOP_LEFT" spacing="15.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0">
+        <VBox spacing="15.0" alignment="TOP_CENTER" AnchorPane.topAnchor="20.0" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="30.0" AnchorPane.bottomAnchor="20.0" styleClass="add-task-main-vbox">
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                <Insets top="20.0" right="30.0" bottom="20.0" left="30.0" />
             </padding>
 
-            <Label style="-fx-font-size: 20px; -fx-font-weight: bold;" text="Tambah/Edit Tugas" />
-
-            <Label fx:id="parentTaskInfoLabel" style="-fx-font-style: italic; -fx-text-fill: #555555;" managed="false" visible="false">
+            <Label text="Aplikasi Management Tugas" styleClass="main-title-text"/>
+            <Label fx:id="formModeLabel" text="Tambah Tugas Baru:" styleClass="sub-title-text">
                 <VBox.margin>
-                    <Insets bottom="10.0" top="5.0" />
+                    <Insets bottom="15.0" />
                 </VBox.margin>
             </Label>
 
-            <GridPane hgap="15.0" vgap="10.0">
-                <columnConstraints>
-                    <ColumnConstraints minWidth="100.0" prefWidth="100.0" />
-                    <ColumnConstraints hgrow="SOMETIMES" minWidth="180.0" prefWidth="200.0" />
-                    <ColumnConstraints minWidth="100.0" prefWidth="120.0" />
-                    <ColumnConstraints hgrow="SOMETIMES" minWidth="180.0" prefWidth="200.0" />
-                </columnConstraints>
-
-                <rowConstraints>
-                    <RowConstraints minHeight="35.0" prefHeight="35.0" />
-                    <RowConstraints minHeight="60.0" prefHeight="60.0" />
-                    <RowConstraints minHeight="35.0" prefHeight="35.0" />
-                    <RowConstraints minHeight="35.0" prefHeight="35.0" />
-                    <RowConstraints minHeight="35.0" prefHeight="35.0" />
-                    <RowConstraints minHeight="35.0" prefHeight="35.0" />
-                </rowConstraints>
-                <children>
-                    <Label text="Nama:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                    <TextField fx:id="namaField" promptText="Nama tugas" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
-                    <Label text="Deskripsi:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                    <TextArea fx:id="deskripsiField" prefRowCount="3" promptText="Deskripsi singkat tugas" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-                    <Label text="Mata Kuliah:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                    <TextField fx:id="matkulField" promptText="Mata kuliah tugas tersebut" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-                    <Label text="Tanggal:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                    <DatePicker fx:id="tanggalPicker" promptText="Pilih tanggal" GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="250.0"/>
-
-                    <Label text="Waktu:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                    <TextField fx:id="waktuField" promptText="hh:mm (opsional)" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-
-                    <Label text="Prioritas:" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-                    <ComboBox fx:id="prioritasBox" promptText="Pilih prioritas" GridPane.columnIndex="3" GridPane.rowIndex="0" prefWidth="250.0"/>
-
-                    <Label text="Ingatkan (hari sebelum):" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                    <Spinner fx:id="reminderOffsetSpinner" editable="true" minWidth="80.0" prefWidth="100.0" GridPane.columnIndex="3" GridPane.rowIndex="1" />
-
-                    <Label text="Progress:" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                    <HBox alignment="CENTER_LEFT" spacing="10.0" GridPane.columnIndex="3" GridPane.rowIndex="2">
-                        <children>
-                            <Slider fx:id="progressSlider" max="100" min="0" value="0" HBox.hgrow="ALWAYS" />
-                            <Label fx:id="progressLabel" minWidth="40.0" text="0%" />
-                        </children>
-                    </HBox>
-
-                    <Label text="Lampiran:" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
-                    <HBox spacing="10.0" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="5" GridPane.columnSpan="3">
-                        <children>
-                            <Button fx:id="chooseFileButton" text="Pilih File..." onAction="#handleChooseFile"/>
-                            <Label fx:id="attachmentNameLabel" text="Tidak ada file dipilih" HBox.hgrow="ALWAYS"/>
-                            <Button fx:id="removeAttachmentButton" text="X" onAction="#handleRemoveAttachment" visible="false" managed="false" style="-fx-background-color: #ff6666; -fx-text-fill: white; -fx-font-weight: bold;"/>
-                        </children>
-                    </HBox>
-                </children>
-            </GridPane>
-
-            <HBox alignment="CENTER_RIGHT" spacing="10.0">
+            <Label fx:id="parentTaskInfoLabel" styleClass="parent-info-label" managed="false" visible="false">
                 <VBox.margin>
-                    <Insets top="20.0" />
+                    <Insets bottom="10.0" />
+                </VBox.margin>
+            </Label>
+
+            <HBox spacing="40.0">
+                <children>
+                    <VBox spacing="8.0" HBox.hgrow="ALWAYS" styleClass="form-column">
+                        <children>
+                            <Label text="Nama Tugas:" styleClass="form-label-above"/>
+                            <TextField fx:id="namaField" promptText="Masukkan nama tugas" styleClass="form-input"/>
+
+                            <Label text="Deskripsi:" styleClass="form-label-above">
+                                <VBox.margin>
+                                    <Insets top="10.0" />
+                                </VBox.margin>
+                            </Label>
+                            <TextArea fx:id="deskripsiField" prefRowCount="4" promptText="Deskripsi singkat mengenai tugas" wrapText="true" styleClass="form-input"/>
+
+                            <Label text="Mata Kuliah:" styleClass="form-label-above">
+                                <VBox.margin>
+                                    <Insets top="10.0" />
+                                </VBox.margin>
+                            </Label>
+                            <TextField fx:id="matkulField" promptText="Mata kuliah terkait tugas" styleClass="form-input"/>
+
+                            <Label text="Tanggal Deadline:" styleClass="form-label-above">
+                                <VBox.margin>
+                                    <Insets top="10.0" />
+                                </VBox.margin>
+                            </Label>
+                            <DatePicker fx:id="tanggalPicker" promptText="Pilih tanggal deadline" styleClass="form-input" prefWidth="Infinity"/>
+
+                            <Label text="Waktu Deadline:" styleClass="form-label-above">
+                                <VBox.margin>
+                                    <Insets top="10.0" />
+                                </VBox.margin>
+                            </Label>
+                            <TextField fx:id="waktuField" promptText="hh:mm (opsional)" styleClass="form-input"/>
+                        </children>
+                    </VBox>
+
+                    <VBox spacing="8.0" HBox.hgrow="ALWAYS" styleClass="form-column">
+                        <children>
+                            <Label text="Prioritas:" styleClass="form-label-above"/>
+                            <ComboBox fx:id="prioritasBox" promptText="Pilih prioritas" styleClass="form-input" prefWidth="Infinity"/>
+
+                            <Label text="Ingatkan (hari sebelum):" styleClass="form-label-above">
+                                <VBox.margin>
+                                    <Insets top="10.0" />
+                                </VBox.margin>
+                            </Label>
+                            <Spinner fx:id="reminderOffsetSpinner" editable="true" styleClass="form-input" prefWidth="Infinity"/>
+
+                            <Label text="Progress:" styleClass="form-label-above">
+                                <VBox.margin>
+                                    <Insets top="10.0" />
+                                </VBox.margin>
+                            </Label>
+                            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                                <children>
+                                    <Slider fx:id="progressSlider" max="100" min="0" value="0" HBox.hgrow="ALWAYS" />
+                                    <Label fx:id="progressLabel" minWidth="45.0" text="0%" styleClass="form-label-progress"/>
+                                </children>
+                            </HBox>
+
+                            <Label text="Lampiran File:" styleClass="form-label-above">
+                                <VBox.margin>
+                                    <Insets top="10.0" />
+                                </VBox.margin>
+                            </Label>
+                            <HBox spacing="10.0" alignment="CENTER_LEFT">
+                                <children>
+                                    <Button fx:id="chooseFileButton" text="Pilih File..." onAction="#handleChooseFile" styleClass="form-button-secondary"/>
+                                    <Label fx:id="attachmentNameLabel" text="Tidak ada file dipilih" HBox.hgrow="ALWAYS" styleClass="attachment-name" wrapText="true" />
+                                </children>
+                            </HBox>
+                            <Button fx:id="removeAttachmentButton" text="Hapus Lampiran Saat Ini" onAction="#handleRemoveAttachment" visible="false" managed="false" styleClass="remove-button-form">
+                                <HBox.margin>
+                                    <Insets top="5.0" />
+                                </HBox.margin>
+                            </Button>
+                        </children>
+                    </VBox>
+                </children>
+                <VBox.margin>
+                    <Insets top="10.0" />
+                </VBox.margin>
+            </HBox>
+
+            <HBox alignment="CENTER" spacing="20.0" styleClass="form-action-buttons">
+                <VBox.margin>
+                    <Insets top="25.0" />
                 </VBox.margin>
                 <children>
-                    <Button fx:id="saveButton" onAction="#handleSave" style="-fx-background-color: #4D90FE; -fx-text-fill: white;" text="Simpan" />
-                    <Button fx:id="cancelButton" onAction="#handleCancel" style="-fx-border-color: black;" text="Batal" />
+                    <Button fx:id="saveButton" onAction="#handleSave" styleClass="save-button" text="Simpan" prefWidth="120.0"/>
+                    <Button fx:id="cancelButton" onAction="#handleCancel" styleClass="cancel-button-form" text="Batal" prefWidth="120.0"/>
                 </children>
             </HBox>
         </VBox>

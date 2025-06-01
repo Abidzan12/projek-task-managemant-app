@@ -239,6 +239,22 @@ public class Database {
         return tasksToRemind;
     }
 
+
+    public static String getUserNameById(int userId) {
+        String sql = "SELECT username FROM users WHERE id = ?";
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("username");
+            }
+        } catch (SQLException e) {
+            System.err.println("Gagal mengambil username untuk userId " + userId + ": " + e.getMessage());
+        }
+        return null; // Atau kembalikan string default jika tidak ditemukan
+    }
+
     public static List<Task> getSubTasks(int parentId, int userId) {
         List<Task> subTasks = new ArrayList<>();
         String sql = "SELECT * FROM tasks WHERE parent_id = ? AND user_id = ?";

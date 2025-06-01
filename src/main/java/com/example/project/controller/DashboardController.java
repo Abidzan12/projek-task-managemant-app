@@ -12,6 +12,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
@@ -29,6 +31,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,56 +42,225 @@ public class DashboardController {
 
     @FXML private TreeTableView<Task> taskTreeTable;
     @FXML private TreeTableColumn<Task, String> colName;
+    @FXML private TreeTableColumn<Task, String> colDescription;
     @FXML private TreeTableColumn<Task, String> colCourse;
-    @FXML private TreeTableColumn<Task, String> colDate;
-    @FXML private TreeTableColumn<Task, String> colTime;
+    @FXML private TreeTableColumn<Task, String> colDeadline;
     @FXML private TreeTableColumn<Task, String> colPriority;
     @FXML private TreeTableColumn<Task, String> colStatus;
     @FXML private TreeTableColumn<Task, Integer> colProgress;
+    @FXML private TreeTableColumn<Task, String> colAttachment;
     @FXML private TreeTableColumn<Task, Void> colAction;
-    @FXML private TreeTableColumn<Task, String> colAttachment; // Kolom baru untuk indikator lampiran
 
-    @FXML private Button btnAddTask;
-    @FXML private Button btnShowAll;
-    @FXML private Button btnShowPending;
-    @FXML private Button btnShowCompleted;
+    @FXML private Label sidebarUserNameLabel;
+    @FXML private Button navDashboardButton;
+    @FXML private Button navListTasksButton;
+    @FXML private Button navAddTaskButton;
+    @FXML private Button navPendingTasksButton;
+    @FXML private Button navCompletedTasksButton;
+
+    @FXML private ImageView clockImageView;
+    @FXML private Label greetingLabel;
+    @FXML private Label taskSummaryLabel;
 
     private static Stage addTaskStage = null;
     private Integer currentUserId;
+    private String currentUserName;
     private HostServices hostServices;
-
 
     @FXML
     public void initialize() {
         this.currentUserId = App.getCurrentUserId();
-        this.hostServices = App.getHostServicesInstance(); // Ambil HostServices dari App
+        this.hostServices = App.getHostServicesInstance();
 
         if (this.currentUserId == null) {
             showErrorDialog("Error Sesi Pengguna", "Tidak dapat memuat data tugas. Sesi pengguna tidak ditemukan. Silakan login ulang.");
             try {
                 App.setRoot("login");
-                Stage stage = (Stage) (btnAddTask != null ? btnAddTask.getScene().getWindow() : null);
-                if (stage != null) stage.setTitle("Login");
+                Stage stage = (Stage) (navAddTaskButton != null && navAddTaskButton.getScene() != null ? navAddTaskButton.getScene().getWindow() : null);
+                if (stage != null) {
+                    stage.setTitle("Login");
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
             return;
         }
+
+        if (taskTreeTable != null) {
+            taskTreeTable.setColumnResizePolicy(TreeTableView.CONSTRAINED_RESIZE_POLICY);
+            taskTreeTable.setShowRoot(false);
+        } else {
+            System.err.println("Error: taskTreeTable belum diinisialisasi sebelum mengatur properti.");
+        }
+
+        loadUserInfo();
+        setupHeaderInfo();
         setupColumns();
         loadTasksAndBuildTree();
-        taskTreeTable.setShowRoot(false);
+
+        try {
+            URL clockIconUrl = getClass().getResource("/com/example/project/images/clock_icon.png");
+            if (clockImageView != null) {
+                if (clockIconUrl != null) {
+                    clockImageView.setImage(new Image(clockIconUrl.toExternalForm()));
+                } else {
+                    System.err.println("File ikon jam tidak ditemukan. Pastikan path benar: /com/example/project/images/clock_icon.png");
+                }
+            } else {
+                System.err.println("ImageView clockImageView adalah null, pastikan fx:id sudah benar di FXML.");
+            }
+        } catch (Exception e) {
+            System.err.println("Gagal memuat ikon jam: " + e.getMessage());
+        }
+    }
+
+    private void loadUserInfo() {
+        if (this.currentUserId != null) {
+            String fetchedUserName = Database.getUserNameById(this.currentUserId);
+            if (fetchedUserName != null && !fetchedUserName.isEmpty()) {
+                this.currentUserName = fetchedUserName;
+            } else {
+                this.currentUserName = "Pengguna";
+                System.err.println("Tidak dapat menemukan nama pengguna untuk ID: " + this.currentUserId + ". Menggunakan nama default.");
+            }
+        } else {
+            this.currentUserName = "Pengguna";
+        }
+    }
+
+    private void setupHeaderInfo() {
+        if (sidebarUserNameLabel != null && this.currentUserName != null) {
+            sidebarUserNameLabel.setText("Hi, " + this.currentUserName + "!");
+        }
+
+        LocalTime now = LocalTime.now();
+        int hour = now.getHour();
+        String greetingTextBase;
+
+        if (hour >= 3 && hour < 11) {
+            greetingTextBase = "Selamat Pagi";
+        } else if (hour >= 11 && hour < 15) {
+            greetingTextBase = "Selamat Siang";
+        } else if (hour >= 15 && hour < 18) {
+            greetingTextBase = "Selamat Sore";
+        } else {
+            greetingTextBase = "Selamat Malam";
+        }
+
+        if (greetingLabel != null && this.currentUserName != null) {
+            greetingLabel.setText(greetingTextBase + ", " + this.currentUserName + "!");
+        } else if (greetingLabel != null) {
+            greetingLabel.setText(greetingTextBase + "!");
+        }
+
+        if (currentUserId != null) {
+            List<Task> allTasks = Database.getAllTasks(currentUserId); // Ambil tasks untuk summary
+            updateTaskSummary(allTasks);
+        } else if (taskSummaryLabel != null) {
+            taskSummaryLabel.setText("Silakan login untuk melihat tugas Anda.");
+        }
     }
 
     private void setupColumns() {
         colName.setCellValueFactory(new TreeItemPropertyValueFactory<>("name"));
+        colDescription.setCellValueFactory(new TreeItemPropertyValueFactory<>("description"));
         colCourse.setCellValueFactory(new TreeItemPropertyValueFactory<>("course"));
-        colDate.setCellValueFactory(new TreeItemPropertyValueFactory<>("date"));
-        colTime.setCellValueFactory(new TreeItemPropertyValueFactory<>("time"));
+
+        colDeadline.setCellValueFactory(cellData -> {
+            Task task = cellData.getValue().getValue();
+            if (task != null && task.getDate() != null) {
+                String deadlineStr = task.getDate();
+                if (task.getTime() != null && !task.getTime().isEmpty()) {
+                    deadlineStr += " " + task.getTime();
+                }
+                return new javafx.beans.property.SimpleStringProperty(deadlineStr);
+            }
+            return new javafx.beans.property.SimpleStringProperty("");
+        });
+
         colPriority.setCellValueFactory(new TreeItemPropertyValueFactory<>("priority"));
+        setupPriorityColumnCellFactory();
+
         colProgress.setCellValueFactory(new TreeItemPropertyValueFactory<>("progress"));
+        setupProgressColumnCellFactory();
+
         colStatus.setCellValueFactory(new TreeItemPropertyValueFactory<>("statusDisplay"));
         setupAttachmentColumn();
         setupActionButtonsWithIkonli();
+    }
+
+    private void setupProgressColumnCellFactory() {
+        Callback<TreeTableColumn<Task, Integer>, TreeTableCell<Task, Integer>> cellFactory = param -> {
+            return new TreeTableCell<Task, Integer>() {
+                private final ProgressBar progressBar = new ProgressBar();
+                private final Label progressText = new Label();
+                private final HBox progressPane = new HBox(5, progressBar, progressText);
+
+                {
+                    progressPane.setAlignment(Pos.CENTER_LEFT);
+                    progressBar.setMinWidth(60);
+                }
+
+                @Override
+                protected void updateItem(Integer item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setGraphic(null);
+                        setText(null);
+                    } else {
+                        progressBar.setProgress(item / 100.0);
+                        progressText.setText(String.format("%d%%", item));
+                        setGraphic(progressPane);
+                        setText(null);
+                    }
+                }
+            };
+        };
+        colProgress.setCellFactory(cellFactory);
+        colProgress.setStyle("-fx-alignment: CENTER-LEFT;");
+    }
+
+    private void setupPriorityColumnCellFactory() {
+        Callback<TreeTableColumn<Task, String>, TreeTableCell<Task, String>> cellFactory = param -> {
+            return new TreeTableCell<Task, String>() {
+                private final Label priorityLabel = new Label();
+
+                {
+                    priorityLabel.getStyleClass().add("priority-label");
+                }
+
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    priorityLabel.getStyleClass().removeAll("priority-low", "priority-medium", "priority-high", "priority-default");
+
+                    if (empty || item == null) {
+                        setText(null);
+                        setGraphic(null);
+                    } else {
+                        priorityLabel.setText(item);
+                        switch (item.toLowerCase()) {
+                            case "rendah":
+                                priorityLabel.getStyleClass().add("priority-low");
+                                break;
+                            case "sedang":
+                                priorityLabel.getStyleClass().add("priority-medium");
+                                break;
+                            case "tinggi":
+                                priorityLabel.getStyleClass().add("priority-high");
+                                break;
+                            default:
+                                priorityLabel.getStyleClass().add("priority-default");
+                                break;
+                        }
+                        setGraphic(priorityLabel);
+                        setText(null);
+                        setAlignment(Pos.CENTER);
+                    }
+                }
+            };
+        };
+        colPriority.setCellFactory(cellFactory);
     }
 
     private void setupAttachmentColumn() {
@@ -95,7 +268,6 @@ public class DashboardController {
         Callback<TreeTableColumn<Task, String>, TreeTableCell<Task, String>> cellFactory = param -> {
             final TreeTableCell<Task, String> cell = new TreeTableCell<>() {
                 private final FontIcon attachmentIcon = new FontIcon(FontAwesomeSolid.PAPERCLIP);
-
                 @Override
                 protected void updateItem(String item, boolean empty) {
                     super.updateItem(item, empty);
@@ -103,14 +275,16 @@ public class DashboardController {
                         setGraphic(null);
                         setText(null);
                         setTooltip(null);
+                        setOnMouseClicked(null);
+                        setCursor(Cursor.DEFAULT);
                     } else {
                         attachmentIcon.setIconSize(16);
                         attachmentIcon.setIconColor(Color.SLATEGRAY);
                         setGraphic(attachmentIcon);
-                        setText(null); // Atau tampilkan nama file: setText(item)
+                        setText(null);
                         setTooltip(new Tooltip("Lihat lampiran: " + item));
-                        this.setCursor(Cursor.HAND);
-                        this.setOnMouseClicked(event -> {
+                        setCursor(Cursor.HAND);
+                        setOnMouseClicked(event -> {
                             TreeItem<Task> treeItem = getTreeTableView().getTreeItem(getIndex());
                             if (treeItem != null && treeItem.getValue() != null) {
                                 handleOpenAttachment(treeItem.getValue());
@@ -125,11 +299,29 @@ public class DashboardController {
         colAttachment.setStyle("-fx-alignment: CENTER;");
     }
 
-
     private void loadTasksAndBuildTree() {
         if (currentUserId == null) return;
         List<Task> allTasks = Database.getAllTasks(currentUserId);
         buildTreeFromList(allTasks);
+        updateTaskSummary(allTasks);
+    }
+
+    private void updateTaskSummary(List<Task> tasks) {
+        if (tasks == null || taskSummaryLabel == null) return;
+        long upcomingCount = tasks.stream()
+                .filter(task -> !task.isCompleted() && task.getDate() != null && !task.getDate().isEmpty())
+                .filter(task -> {
+                    try {
+                        LocalDate deadline = LocalDate.parse(task.getDate());
+                        return !deadline.isBefore(LocalDate.now()) && deadline.isBefore(LocalDate.now().plusDays(4));
+                    } catch (Exception e) { return false; }
+                })
+                .count();
+        if (upcomingCount > 0) {
+            taskSummaryLabel.setText("Anda memiliki " + upcomingCount + " tugas yang mendekati deadline. Segera selesaikan ya!");
+        } else {
+            taskSummaryLabel.setText("Tidak ada tugas yang mendekati deadline saat ini. Bagus!");
+        }
     }
 
     private void setupActionButtonsWithIkonli() {
@@ -217,23 +409,6 @@ public class DashboardController {
             return cell;
         };
         colAction.setCellFactory(cellFactory);
-    }
-
-    private void handleOpenAttachment(Task task) {
-        if (hostServices == null) {
-            showErrorDialog("Error Aplikasi", "Tidak dapat membuka file lampiran (HostServices tidak tersedia).");
-            return;
-        }
-        if (task.getAttachmentStoredName() != null && !task.getAttachmentStoredName().isEmpty()) {
-            File fileToOpen = new File("data/attachments/" + task.getAttachmentStoredName());
-            if (fileToOpen.exists()) {
-                hostServices.showDocument(fileToOpen.toURI().toString());
-            } else {
-                showErrorDialog("File Tidak Ditemukan", "File lampiran '" + task.getAttachmentOriginalName() + "' tidak ditemukan di disk.");
-            }
-        } else {
-            showErrorDialog("Tidak Ada Lampiran", "Tugas ini tidak memiliki lampiran.");
-        }
     }
 
     private void handleAddSubTask(Task parentTask) {
@@ -375,7 +550,7 @@ public class DashboardController {
     }
 
     @FXML
-    private void onAddTask() {
+    private void onAddTask(ActionEvent event) {
         if (currentUserId == null) {
             showErrorDialog("Error Sesi", "Sesi pengguna tidak valid. Silakan login ulang.");
             return;
@@ -400,7 +575,7 @@ public class DashboardController {
                 }
                 addTaskStage.setScene(scene);
 
-                addTaskStage.setOnHiding(event -> loadTasksAndBuildTree());
+                addTaskStage.setOnHiding(e -> loadTasksAndBuildTree());
                 addTaskStage.show();
             } else {
                 addTaskStage.toFront();
@@ -412,19 +587,19 @@ public class DashboardController {
     }
 
     @FXML
-    private void onShowAll() {
+    private void onShowAll(ActionEvent event) {
         loadTasksAndBuildTree();
     }
 
     @FXML
-    private void onShowPending() {
+    private void onShowPending(ActionEvent event) {
         if (currentUserId == null) return;
         List<Task> filteredList = Database.getTasksByCompletion(currentUserId, false);
         buildTreeFromList(filteredList);
     }
 
     @FXML
-    private void onShowCompleted() {
+    private void onShowCompleted(ActionEvent event) {
         if (currentUserId == null) return;
         List<Task> filteredList = Database.getTasksByCompletion(currentUserId, true);
         buildTreeFromList(filteredList);
@@ -467,5 +642,22 @@ public class DashboardController {
         errorAlert.setHeaderText(null);
         errorAlert.setContentText(message);
         errorAlert.showAndWait();
+    }
+
+    private void handleOpenAttachment(Task task) {
+        if (hostServices == null) {
+            showErrorDialog("Error Aplikasi", "Tidak dapat membuka file lampiran (HostServices tidak tersedia).");
+            return;
+        }
+        if (task.getAttachmentStoredName() != null && !task.getAttachmentStoredName().isEmpty()) {
+            File fileToOpen = new File("data/attachments/" + task.getAttachmentStoredName());
+            if (fileToOpen.exists()) {
+                this.hostServices.showDocument(fileToOpen.toURI().toString());
+            } else {
+                showErrorDialog("File Tidak Ditemukan", "File lampiran '" + task.getAttachmentOriginalName() + "' tidak ditemukan di folder attachments.");
+            }
+        } else {
+            System.out.println("Tidak ada lampiran untuk tugas: " + task.getName());
+        }
     }
 }

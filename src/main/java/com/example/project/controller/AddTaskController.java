@@ -134,7 +134,7 @@ public class AddTaskController {
         this.selectedAttachmentFile = null;
         this.existingStoredAttachmentName = null;
         this.attachmentActionTaken = false;
-        saveButton.setText("Simpan Sub-Tugas");
+        saveButton.setText("Simpan Tugas");
         clearFields();
 
         if (parentId != null && parentTaskInfoLabel != null) {

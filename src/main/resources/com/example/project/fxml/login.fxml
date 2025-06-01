@@ -17,8 +17,8 @@
             </padding>
                 <children>
                     <Label text="Sign in" styleClass="title-text-form"/>
-                    <Label text="Email" styleClass="form-label"/>
-                    <TextField fx:id="emailField" promptText="Masukkan email Anda" styleClass="input-field" maxWidth="Infinity"/>
+                    <Label text="Username" styleClass="form-label"/>
+                    <TextField fx:id="emailField" promptText="Masukkan Username Anda" styleClass="input-field" maxWidth="Infinity"/>
                     <Label text="Password" styleClass="form-label"/>
                     <PasswordField fx:id="passwordField" promptText="Masukkan password" styleClass="input-field" maxWidth="Infinity"/>
                     <Button text="Sign in" onAction="#handleLogin" styleClass="action-button-form" maxWidth="Infinity"/>
