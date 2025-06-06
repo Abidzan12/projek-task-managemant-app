@@ -3,6 +3,8 @@ package com.example.project.controller;
 import com.example.project.model.Database;
 import com.example.project.model.Task;
 import com.example.project.App;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
@@ -39,6 +41,8 @@ public class AddTaskController {
     @FXML
     private Spinner<Integer> reminderOffsetSpinner;
     @FXML
+    private CheckBox reminderCheckBox; // CheckBox untuk mengaktifkan/menonaktifkan pengingat
+    @FXML
     private Button saveButton;
     @FXML
     private Button cancelButton;
@@ -69,9 +73,10 @@ public class AddTaskController {
         progressLabel.setText(String.format("%d%%", (int)progressSlider.getValue()));
 
         SpinnerValueFactory<Integer> reminderValueFactory =
-                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 30, 0, 1);
+                new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 30, 1, 1); // Minimal sekarang 1
         reminderOffsetSpinner.setValueFactory(reminderValueFactory);
-        reminderOffsetSpinner.setEditable(true);
+
+        reminderOffsetSpinner.disableProperty().bind(reminderCheckBox.selectedProperty().not());
 
         if (parentTaskInfoLabel != null) {
             parentTaskInfoLabel.setVisible(false);
@@ -113,9 +118,19 @@ public class AddTaskController {
             progressSlider.setValue(task.getProgress());
             progressLabel.setText(String.format("%d%%", task.getProgress()));
 
-            if (reminderOffsetSpinner.getValueFactory() != null) {
-                reminderOffsetSpinner.getValueFactory().setValue(task.getReminderOffsetDays());
+            int reminderDays = task.getReminderOffsetDays();
+            if (reminderDays > 0) {
+                reminderCheckBox.setSelected(true);
+                if (reminderOffsetSpinner.getValueFactory() != null) {
+                    reminderOffsetSpinner.getValueFactory().setValue(reminderDays);
+                }
+            } else {
+                reminderCheckBox.setSelected(false);
+                if (reminderOffsetSpinner.getValueFactory() != null) {
+                    reminderOffsetSpinner.getValueFactory().setValue(1); // Set ke nilai minimal
+                }
             }
+
             updateAttachmentUI(task.getAttachmentOriginalName(), task.getAttachmentStoredName());
             saveButton.setText("Update Tugas");
         } else {
@@ -134,7 +149,7 @@ public class AddTaskController {
         this.selectedAttachmentFile = null;
         this.existingStoredAttachmentName = null;
         this.attachmentActionTaken = false;
-        saveButton.setText("Simpan Tugas");
+        saveButton.setText("Simpan Sub-Tugas");
         clearFields();
 
         if (parentId != null && parentTaskInfoLabel != null) {
@@ -154,8 +169,9 @@ public class AddTaskController {
         tanggalPicker.setValue(null);
         waktuField.clear();
         prioritasBox.getSelectionModel().clearSelection();
+        reminderCheckBox.setSelected(false);
         if (reminderOffsetSpinner.getValueFactory() != null) {
-            reminderOffsetSpinner.getValueFactory().setValue(0);
+            reminderOffsetSpinner.getValueFactory().setValue(1);
         }
         progressSlider.setValue(0);
         progressLabel.setText("0%");
@@ -219,7 +235,12 @@ public class AddTaskController {
         String prioritas = prioritasBox.getValue();
         int progress = (int) progressSlider.getValue();
         boolean completed = (progress == 100);
-        int reminderOffset = reminderOffsetSpinner.getValue();
+
+        int reminderOffset = 0;
+        if (reminderCheckBox.isSelected()) {
+            reminderOffset = reminderOffsetSpinner.getValue();
+        }
+
 
         Integer currentUserId = App.getCurrentUserId();
         if (currentUserId == null) {
@@ -275,11 +296,19 @@ public class AddTaskController {
             return;
         }
 
+        String lastRemindedDate = null;
+        if (editMode && taskToEdit != null && taskToEdit.getReminderOffsetDays() != reminderOffset) {
+            lastRemindedDate = null;
+        } else if (editMode && taskToEdit != null) {
+            lastRemindedDate = taskToEdit.getLastRemindedDate();
+        }
+
         if (editMode && taskToEdit != null) {
             Task updatedTask = new Task(
                     taskToEdit.getId(), nama, deskripsi, matkul, tanggal,
                     waktu, prioritas, progress, completed, reminderOffset,
-                    taskToEdit.getParentId(), finalStoredAttachmentName, finalOriginalAttachmentName
+                    taskToEdit.getParentId(), finalStoredAttachmentName, finalOriginalAttachmentName,
+                    lastRemindedDate
             );
             boolean success = Database.updateTask(updatedTask, currentUserId);
             if (success) showAlert("Sukses", "Tugas berhasil diupdate.");
@@ -288,7 +317,8 @@ public class AddTaskController {
             Task newTask = new Task(
                     0, nama, deskripsi, matkul, tanggal,
                     waktu, prioritas, progress, completed, reminderOffset,
-                    this.parentIdForNewTask, finalStoredAttachmentName, finalOriginalAttachmentName
+                    this.parentIdForNewTask, finalStoredAttachmentName, finalOriginalAttachmentName,
+                    null
             );
             boolean success = Database.insertTask(newTask, currentUserId);
             if (success) showAlert("Sukses", "Tugas berhasil disimpan.");

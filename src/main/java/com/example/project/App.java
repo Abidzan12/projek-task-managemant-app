@@ -12,7 +12,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.controlsfx.control.Notifications;
-// import org.controlsfx.control.Action; // Dihapus karena tidak digunakan
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,7 +51,8 @@ public class App extends Application {
         stage.setTitle("Task Manager");
         stage.show();
 
-        startReminderService();
+        // Kita bisa menghapus scheduler atau membuatnya tetap berjalan untuk notifikasi saat app aktif
+        // startReminderService();
     }
 
     public static HostServices getHostServicesInstance() {
@@ -102,57 +102,31 @@ public class App extends Application {
                     .title(title)
                     .text(message)
                     .graphic(null)
-                    .position(Pos.BOTTOM_RIGHT)
-                    .hideAfter(Duration.seconds(15)) // Durasi bisa disesuaikan
-                    .onAction(event -> { // Aksi default saat notifikasi diklik
+                    .position(Pos.TOP_RIGHT)
+                    .hideAfter(Duration.seconds(15))
+                    .onAction(event -> {
                         System.out.println("Notifikasi untuk '" + task.getName() + "' diklik!");
                         if (primaryStageRef != null) {
                             primaryStageRef.setIconified(false);
                             primaryStageRef.toFront();
                         }
                     });
-            // Pemanggilan .actions(...) dihapus
 
             notificationBuilder.showInformation();
         });
     }
 
-    public void startReminderService() {
-        reminderScheduler = Executors.newSingleThreadScheduledExecutor();
-        reminderScheduler.scheduleAtFixedRate(() -> {
-            Platform.runLater(() -> {
-                Integer userId = getCurrentUserId();
-                if (userId != null) {
-                    System.out.println("Scheduler: Pemeriksaan pengingat berjalan pada - " + java.time.LocalDateTime.now() + " untuk User ID: " + userId);
-                    List<Task> tasksToRemind = Database.getTasksDueForReminderToday(userId);
-                    if (tasksToRemind != null && !tasksToRemind.isEmpty()) {
-                        for (Task taskToRemind : tasksToRemind) {
-                            showDesktopNotification(taskToRemind);
-                        }
-                    } else {
-                        System.out.println("Scheduler: Tidak ada tugas untuk diingatkan saat ini untuk User ID: " + userId);
-                    }
-                } else {
-                    System.out.println("Scheduler: Tidak ada pengguna yang login, pemeriksaan pengingat dilewati.");
-                }
-            });
-        }, 0, 1, TimeUnit.HOURS);
-    }
+    // public void startReminderService() { ... } // Method ini sekarang menjadi opsional
 
     @Override
     public void stop() throws Exception {
-        System.out.println("Aplikasi berhenti, mematikan scheduler pengingat.");
-        if (reminderScheduler != null && !reminderScheduler.isShutdown()) {
-            reminderScheduler.shutdownNow();
-        }
+        // if (reminderScheduler != null && !reminderScheduler.isShutdown()) {
+        //     reminderScheduler.shutdownNow();
+        // }
         super.stop();
     }
 
-    public static void testNotification() {
-        Task testTask = new Task(999, "Meeting Proyek Penting", "Diskusi progres mingguan", "Proyek Akhir",
-                LocalDate.now().plusDays(1).toString(), "14:00", "Tinggi", 0, false, 1, null, null, null);
-        showDesktopNotification(testTask);
-    }
+
 
     public static void main(String[] args) {
         launch(args);

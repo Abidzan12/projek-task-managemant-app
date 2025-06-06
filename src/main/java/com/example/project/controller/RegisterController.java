@@ -30,7 +30,7 @@ public class RegisterController {
 
         if (email.isEmpty() || password.isEmpty()) {
             statusLabel.setTextFill(Color.RED);
-            statusLabel.setText("Email dan password tidak boleh kosong.");
+            statusLabel.setText("username dan password tidak boleh kosong.");
             return;
         }
 
@@ -40,7 +40,7 @@ public class RegisterController {
             statusLabel.setText("Registrasi berhasil! Silakan login.");
         } else {
             statusLabel.setTextFill(Color.RED);
-            statusLabel.setText("Registrasi gagal. Email mungkin sudah digunakan.");
+            statusLabel.setText("Registrasi gagal. Username mungkin sudah digunakan.");
         }
     }
 

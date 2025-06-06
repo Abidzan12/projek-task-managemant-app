@@ -4,8 +4,7 @@ import com.example.project.App;
 import com.example.project.model.Database;
 import com.example.project.model.Task;
 import javafx.application.HostServices;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
@@ -33,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +63,7 @@ public class DashboardController {
     @FXML private Label taskSummaryLabel;
 
     private static Stage addTaskStage = null;
+    private static Stage addSubtasksStage = null;
     private Integer currentUserId;
     private String currentUserName;
     private HostServices hostServices;
@@ -89,8 +90,6 @@ public class DashboardController {
         if (taskTreeTable != null) {
             taskTreeTable.setColumnResizePolicy(TreeTableView.CONSTRAINED_RESIZE_POLICY);
             taskTreeTable.setShowRoot(false);
-        } else {
-            System.err.println("Error: taskTreeTable belum diinisialisasi sebelum mengatur properti.");
         }
 
         loadUserInfo();
@@ -106,8 +105,6 @@ public class DashboardController {
                 } else {
                     System.err.println("File ikon jam tidak ditemukan. Pastikan path benar: /com/example/project/images/clock_icon.png");
                 }
-            } else {
-                System.err.println("ImageView clockImageView adalah null, pastikan fx:id sudah benar di FXML.");
             }
         } catch (Exception e) {
             System.err.println("Gagal memuat ikon jam: " + e.getMessage());
@@ -121,7 +118,6 @@ public class DashboardController {
                 this.currentUserName = fetchedUserName;
             } else {
                 this.currentUserName = "Pengguna";
-                System.err.println("Tidak dapat menemukan nama pengguna untuk ID: " + this.currentUserId + ". Menggunakan nama default.");
             }
         } else {
             this.currentUserName = "Pengguna";
@@ -154,8 +150,7 @@ public class DashboardController {
         }
 
         if (currentUserId != null) {
-            List<Task> allTasks = Database.getAllTasks(currentUserId); // Ambil tasks untuk summary
-            updateTaskSummary(allTasks);
+            updateTaskSummary(Database.getAllTasks(currentUserId));
         } else if (taskSummaryLabel != null) {
             taskSummaryLabel.setText("Silakan login untuk melihat tugas Anda.");
         }
@@ -164,103 +159,88 @@ public class DashboardController {
     private void setupColumns() {
         colName.setCellValueFactory(new TreeItemPropertyValueFactory<>("name"));
         colDescription.setCellValueFactory(new TreeItemPropertyValueFactory<>("description"));
+
         colCourse.setCellValueFactory(new TreeItemPropertyValueFactory<>("course"));
+        colCourse.setCellFactory(column -> createInheritedDataCell(Task::getCourse));
 
         colDeadline.setCellValueFactory(cellData -> {
             Task task = cellData.getValue().getValue();
-            if (task != null && task.getDate() != null) {
+            if (task != null && task.getDate() != null && !task.getDate().isEmpty()) {
                 String deadlineStr = task.getDate();
                 if (task.getTime() != null && !task.getTime().isEmpty()) {
                     deadlineStr += " " + task.getTime();
                 }
-                return new javafx.beans.property.SimpleStringProperty(deadlineStr);
+                return new SimpleStringProperty(deadlineStr);
             }
-            return new javafx.beans.property.SimpleStringProperty("");
+            return new SimpleStringProperty("");
         });
+        colDeadline.setCellFactory(column -> createInheritedDataCell(task -> {
+            if (task.getDate() != null && !task.getDate().isEmpty()) {
+                String deadlineStr = task.getDate();
+                if (task.getTime() != null && !task.getTime().isEmpty()) {
+                    deadlineStr += " " + task.getTime();
+                }
+                return deadlineStr;
+            }
+            return "";
+        }));
 
         colPriority.setCellValueFactory(new TreeItemPropertyValueFactory<>("priority"));
-        setupPriorityColumnCellFactory();
+        colPriority.setCellFactory(column -> createInheritedDataCell(Task::getPriority));
 
         colProgress.setCellValueFactory(new TreeItemPropertyValueFactory<>("progress"));
-        setupProgressColumnCellFactory();
+        colProgress.setCellFactory(column -> new TreeTableCell<>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                TreeItem<Task> treeItem = getTreeTableRow() != null ? getTreeTableRow().getTreeItem() : null;
+
+                if (empty || item == null || treeItem == null || treeItem.getValue() == null) {
+                    setGraphic(null);
+                    return;
+                }
+
+                if (treeItem.getParent() != null && treeItem.getParent().getParent() != null) {
+                    setGraphic(null);
+                } else {
+                    ProgressBar progressBar = new ProgressBar(item / 100.0);
+                    Label progressText = new Label(String.format("%d%%", item));
+                    HBox progressPane = new HBox(5, progressBar, progressText);
+                    progressPane.setAlignment(Pos.CENTER_LEFT);
+                    progressBar.setMinWidth(60);
+                    setGraphic(progressPane);
+                }
+            }
+        });
 
         colStatus.setCellValueFactory(new TreeItemPropertyValueFactory<>("statusDisplay"));
         setupAttachmentColumn();
         setupActionButtonsWithIkonli();
     }
 
-    private void setupProgressColumnCellFactory() {
-        Callback<TreeTableColumn<Task, Integer>, TreeTableCell<Task, Integer>> cellFactory = param -> {
-            return new TreeTableCell<Task, Integer>() {
-                private final ProgressBar progressBar = new ProgressBar();
-                private final Label progressText = new Label();
-                private final HBox progressPane = new HBox(5, progressBar, progressText);
+    private <T> TreeTableCell<Task, T> createInheritedDataCell(java.util.function.Function<Task, T> propertyExtractor) {
+        return new TreeTableCell<>() {
+            @Override
+            protected void updateItem(T item, boolean empty) {
+                super.updateItem(item, empty);
+                TreeItem<Task> treeItem = getTreeTableRow() != null ? getTreeTableRow().getTreeItem() : null;
 
-                {
-                    progressPane.setAlignment(Pos.CENTER_LEFT);
-                    progressBar.setMinWidth(60);
-                }
-
-                @Override
-                protected void updateItem(Integer item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty || item == null) {
+                if (empty || treeItem == null || treeItem.getValue() == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    if (treeItem.getParent() != null && treeItem.getParent().getParent() != null) {
+                        setText("—");
                         setGraphic(null);
-                        setText(null);
-                    } else {
-                        progressBar.setProgress(item / 100.0);
-                        progressText.setText(String.format("%d%%", item));
-                        setGraphic(progressPane);
-                        setText(null);
-                    }
-                }
-            };
-        };
-        colProgress.setCellFactory(cellFactory);
-        colProgress.setStyle("-fx-alignment: CENTER-LEFT;");
-    }
-
-    private void setupPriorityColumnCellFactory() {
-        Callback<TreeTableColumn<Task, String>, TreeTableCell<Task, String>> cellFactory = param -> {
-            return new TreeTableCell<Task, String>() {
-                private final Label priorityLabel = new Label();
-
-                {
-                    priorityLabel.getStyleClass().add("priority-label");
-                }
-
-                @Override
-                protected void updateItem(String item, boolean empty) {
-                    super.updateItem(item, empty);
-                    priorityLabel.getStyleClass().removeAll("priority-low", "priority-medium", "priority-high", "priority-default");
-
-                    if (empty || item == null) {
-                        setText(null);
-                        setGraphic(null);
-                    } else {
-                        priorityLabel.setText(item);
-                        switch (item.toLowerCase()) {
-                            case "rendah":
-                                priorityLabel.getStyleClass().add("priority-low");
-                                break;
-                            case "sedang":
-                                priorityLabel.getStyleClass().add("priority-medium");
-                                break;
-                            case "tinggi":
-                                priorityLabel.getStyleClass().add("priority-high");
-                                break;
-                            default:
-                                priorityLabel.getStyleClass().add("priority-default");
-                                break;
-                        }
-                        setGraphic(priorityLabel);
-                        setText(null);
                         setAlignment(Pos.CENTER);
+                    } else {
+                        setText(item != null ? item.toString() : "");
+                        setGraphic(null);
+                        setAlignment(Pos.CENTER_LEFT);
                     }
                 }
-            };
+            }
         };
-        colPriority.setCellFactory(cellFactory);
     }
 
     private void setupAttachmentColumn() {
@@ -331,7 +311,7 @@ public class DashboardController {
                 private final FontIcon deleteIcon = new FontIcon(FontAwesomeSolid.TRASH_ALT);
                 private final FontIcon addSubtaskIcon = new FontIcon(FontAwesomeSolid.PLUS_CIRCLE);
                 private final Button completeButton = new Button();
-                private final HBox pane = new HBox(8, editIcon, deleteIcon, addSubtaskIcon, completeButton);
+                private HBox pane;
 
                 {
                     editIcon.setIconSize(18);
@@ -370,8 +350,6 @@ public class DashboardController {
                             handleToggleCompleteTask(treeItem.getValue());
                         }
                     });
-
-                    pane.setAlignment(javafx.geometry.Pos.CENTER);
                 }
 
                 @Override
@@ -389,19 +367,26 @@ public class DashboardController {
                         if (currentTask.isCompleted()) {
                             completeButton.setText("Batal Selesai");
                             completeButton.setStyle("-fx-background-color: #ffc107; -fx-text-fill: black;");
-                            editIcon.setDisable(true);
-                            addSubtaskIcon.setDisable(true);
-                            editIcon.setIconColor(Color.LIGHTGRAY);
-                            addSubtaskIcon.setIconColor(Color.LIGHTGRAY);
                         } else {
                             completeButton.setText("Selesaikan");
                             completeButton.setStyle("-fx-background-color: #28a745; -fx-text-fill: white;");
-                            editIcon.setDisable(false);
-                            addSubtaskIcon.setDisable(false);
-                            editIcon.setIconColor(Color.ROYALBLUE);
-                            addSubtaskIcon.setIconColor(Color.FORESTGREEN);
                         }
+
+                        boolean isSubtask = currentTask.getParentId() != null;
+                        if (isSubtask) {
+                            pane = new HBox(8, editIcon, deleteIcon, completeButton);
+                            editIcon.setDisable(currentTask.isCompleted());
+                            editIcon.setIconColor(currentTask.isCompleted() ? Color.LIGHTGRAY : Color.ROYALBLUE);
+                        } else {
+                            pane = new HBox(8, editIcon, deleteIcon, addSubtaskIcon, completeButton);
+                            editIcon.setDisable(currentTask.isCompleted());
+                            addSubtaskIcon.setDisable(currentTask.isCompleted());
+                            editIcon.setIconColor(currentTask.isCompleted() ? Color.LIGHTGRAY : Color.ROYALBLUE);
+                            addSubtaskIcon.setIconColor(currentTask.isCompleted() ? Color.LIGHTGRAY : Color.FORESTGREEN);
+                        }
+
                         deleteIcon.setIconColor(Color.CRIMSON);
+                        pane.setAlignment(javafx.geometry.Pos.CENTER);
                         setGraphic(pane);
                     }
                 }
@@ -417,31 +402,36 @@ public class DashboardController {
             return;
         }
         try {
-            if (addTaskStage == null || !addTaskStage.isShowing()) {
-                FXMLLoader loader = new FXMLLoader(App.class.getResource("/com/example/project/fxml/add_task.fxml"));
+            if (addSubtasksStage == null || !addSubtasksStage.isShowing()) {
+                FXMLLoader loader = new FXMLLoader(App.class.getResource("/com/example/project/fxml/add_subtasks_dialog.fxml"));
                 Parent root = loader.load();
 
-                AddTaskController controller = loader.getController();
-                controller.setParentTaskInfo(parentTask.getId(), parentTask.getName());
+                AddSubtasksController controller = loader.getController();
+                controller.setParentTask(parentTask);
 
-                addTaskStage = new Stage();
-                addTaskStage.initModality(Modality.APPLICATION_MODAL);
-                addTaskStage.setTitle("Tambah Sub-Tugas untuk: " + parentTask.getName());
+                addSubtasksStage = new Stage();
+                addSubtasksStage.initModality(Modality.APPLICATION_MODAL);
+                addSubtasksStage.setTitle("Tambah Sub-Tugas");
 
                 Scene scene = new Scene(root);
                 URL cssUrl = App.class.getResource("/com/example/project/css/style.css");
                 if (cssUrl != null) {
                     scene.getStylesheets().add(cssUrl.toExternalForm());
                 }
-                addTaskStage.setScene(scene);
-                addTaskStage.setOnHiding(event -> loadTasksAndBuildTree());
-                addTaskStage.show();
+                addSubtasksStage.setScene(scene);
+
+                addSubtasksStage.setOnHiding(event -> {
+                    checkAndUpdateParentTaskProgress(parentTask.getId());
+                    loadTasksAndBuildTree();
+                    addSubtasksStage = null;
+                });
+                addSubtasksStage.show();
             } else {
-                addTaskStage.toFront();
+                addSubtasksStage.toFront();
             }
         } catch (IOException e) {
             e.printStackTrace();
-            showErrorDialog("Gagal Memuat Form Tambah Sub-Tugas", "Tidak dapat memuat tampilan untuk menambah sub-tugas.");
+            showErrorDialog("Gagal Memuat Form", "Tidak dapat memuat tampilan untuk menambah sub-tugas.");
         }
     }
 
@@ -483,24 +473,32 @@ public class DashboardController {
             showErrorDialog("Error Sesi", "Sesi pengguna tidak valid.");
             return;
         }
+
+        List<Task> descendants = new ArrayList<>();
+        collectAllDescendants(task, descendants);
+        descendants.add(task);
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Konfirmasi Hapus");
         alert.setHeaderText(null);
-        alert.setContentText("Apakah Anda yakin ingin menghapus tugas '" + task.getName() + "' dan semua sub-tugasnya (jika ada)?");
+        alert.setContentText("Apakah Anda yakin ingin menghapus tugas '" + task.getName() + "' dan semua sub-tugasnya?");
 
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             Integer parentIdOfDeletedTask = task.getParentId();
-            String storedAttachmentName = task.getAttachmentStoredName();
 
             boolean success = Database.deleteTask(task.getId(), currentUserId);
+
             if (success) {
-                if (storedAttachmentName != null && !storedAttachmentName.isEmpty()) {
-                    try {
-                        Files.deleteIfExists(Paths.get("data/attachments/" + storedAttachmentName));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        showErrorDialog("Error Hapus File", "Gagal menghapus file lampiran dari disk.");
+                for (Task descendant : descendants) {
+                    String storedAttachmentName = descendant.getAttachmentStoredName();
+                    if (storedAttachmentName != null && !storedAttachmentName.isEmpty()) {
+                        try {
+                            Files.deleteIfExists(Paths.get("data/attachments/" + storedAttachmentName));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            showErrorDialog("Error Hapus File", "Gagal menghapus file lampiran: " + descendant.getAttachmentOriginalName());
+                        }
                     }
                 }
                 checkAndUpdateParentTaskProgress(parentIdOfDeletedTask);
@@ -510,6 +508,15 @@ public class DashboardController {
             }
         }
     }
+
+    private void collectAllDescendants(Task parent, List<Task> descendantList) {
+        List<Task> children = Database.getSubTasks(parent.getId(), this.currentUserId);
+        for (Task child : children) {
+            descendantList.add(child);
+            collectAllDescendants(child, descendantList);
+        }
+    }
+
 
     private void handleToggleCompleteTask(Task task) {
         if (currentUserId == null) {

@@ -1,6 +1,7 @@
 package com.example.project.controller;
 
 import com.example.project.model.Database;
+import com.example.project.model.Task;
 import com.example.project.App;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -10,15 +11,14 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.paint.Color;
 import java.io.IOException;
+import java.util.List;
 
 public class LoginController {
 
     @FXML
     private TextField emailField;
-
     @FXML
     private PasswordField passwordField;
-
     @FXML
     private Label statusLabel;
 
@@ -37,14 +37,15 @@ public class LoginController {
 
         if (userId != null) {
             App.setCurrentUserId(userId);
+
+            checkAndShowReminders(userId);
+
             statusLabel.setTextFill(Color.GREEN);
             statusLabel.setText("Login berhasil! Memuat dashboard...");
             try {
-                Stage stage = (Stage) emailField.getScene().getWindow(); // Ambil Stage SEBELUM setRoot
-
-                App.setRoot("dashboard"); // Ganti root scene
-
-                if (stage != null) { // Gunakan referensi stage yang sudah diambil
+                Stage stage = (Stage) emailField.getScene().getWindow();
+                App.setRoot("dashboard");
+                if (stage != null) {
                     stage.setTitle("Dashboard");
                 }
             } catch (IOException e) {
@@ -58,14 +59,22 @@ public class LoginController {
         }
     }
 
+    private void checkAndShowReminders(int userId) {
+        List<Task> tasksToRemind = Database.getTasksForReminder(userId);
+        if (tasksToRemind != null && !tasksToRemind.isEmpty()) {
+            System.out.println("Menemukan " + tasksToRemind.size() + " pengingat saat login.");
+            for (Task task : tasksToRemind) {
+                App.showDesktopNotification(task);
+            }
+        }
+    }
+
     @FXML
     protected void goToRegister(ActionEvent event) {
         try {
-            Stage stage = (Stage) emailField.getScene().getWindow(); // Ambil Stage SEBELUM setRoot
-
-            App.setRoot("register"); // Ganti root scene
-
-            if (stage != null) { // Gunakan referensi stage yang sudah diambil
+            Stage stage = (Stage) emailField.getScene().getWindow();
+            App.setRoot("register");
+            if (stage != null) {
                 stage.setTitle("Registrasi Pengguna");
             }
         } catch (IOException e) {

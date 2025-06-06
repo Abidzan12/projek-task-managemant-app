@@ -14,11 +14,13 @@ public class Task {
     private Integer parentId;
     private String attachmentStoredName;
     private String attachmentOriginalName;
+    private String lastRemindedDate;
 
     public Task(int id, String name, String description, String course, String date,
                 String time, String priority, int progress, boolean completed,
                 int reminderOffsetDays, Integer parentId,
-                String attachmentStoredName, String attachmentOriginalName) {
+                String attachmentStoredName, String attachmentOriginalName,
+                String lastRemindedDate) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -32,18 +34,8 @@ public class Task {
         this.parentId = parentId;
         this.attachmentStoredName = attachmentStoredName;
         this.attachmentOriginalName = attachmentOriginalName;
+        this.lastRemindedDate = lastRemindedDate;
     }
-
-    public Task(int id, String name, String description, String course, String date,
-                String time, String priority, int progress, boolean completed, int reminderOffsetDays, Integer parentId) {
-        this(id, name, description, course, date, time, priority, progress, completed, reminderOffsetDays, parentId, null, null);
-    }
-
-    public Task(int id, String name, String description, String course, String date,
-                String time, String priority, int progress, boolean completed, int reminderOffsetDays) {
-        this(id, name, description, course, date, time, priority, progress, completed, reminderOffsetDays, null, null, null);
-    }
-
 
     public int getId() {
         return id;
@@ -159,5 +151,13 @@ public class Task {
 
     public void setAttachmentOriginalName(String attachmentOriginalName) {
         this.attachmentOriginalName = attachmentOriginalName;
+    }
+
+    public String getLastRemindedDate() {
+        return lastRemindedDate;
+    }
+
+    public void setLastRemindedDate(String lastRemindedDate) {
+        this.lastRemindedDate = lastRemindedDate;
     }
 }
