@@ -1,3 +1,7 @@
+/* ==========================================================================
+   LOGIN & REGISTER PAGES
+   ========================================================================== */
+
 .root-pane-login {
     -fx-background-color: #3F51B5;
     -fx-font-family: "Segoe UI", Arial, sans-serif;
@@ -59,11 +63,6 @@
 
 .action-button-form:hover {
     -fx-background-color: #303F9F;
-}
-
-.status-label {
-    -fx-font-size: 13px;
-    -fx-padding: 10px 0 0 0;
 }
 
 .welcome-pane-right {
@@ -168,11 +167,6 @@
     -fx-background-color: #4A65C1;
 }
 
-.status-label-register {
-     -fx-font-size: 13px;
-     -fx-padding: 10px 0 0 0;
-}
-
 .welcome-pane-right-register {
     -fx-background-color: transparent;
     -fx-background-radius: 0 20px 20px 0;
@@ -211,29 +205,30 @@
     -fx-background-color: #D1D9FF;
 }
 
-.status-label, .status-label_register {
+.status-label, .status-label-register {
     -fx-font-size: 13px;
     -fx-padding: 10px 0 0 0;
 }
 
-//dasbord
-/* === FONT & ROOT VARIABLES === */
+
+/* ==========================================================================
+   DASHBOARD (REVISED)
+   ========================================================================== */
 .root {
     -fx-font-family: "Arial", sans-serif;
     -fx-base: #EBEBEB;
 
-    /* Palet Warna */
+    /* Color Palette */
     -color-bg-default: #EBEBEB;
     -color-bg-sidebar: #3F83F8;
     -color-bg-card: #FFFFFF;
-    -color-primary-accent: #EF4444; /* Merah untuk aksen aktif */
+    -color-primary-accent: #EF4444; /* Red for active accent */
     -color-text-primary: #1F2937;
     -color-text-secondary: #6B7280;
     -color-text-on-dark: #FFFFFF;
     -color-border: #D1D5DB;
 }
 
-/* === MAIN LAYOUT & CARDS === */
 .dashboard-background {
     -fx-background-color: -color-bg-default;
 }
@@ -251,7 +246,6 @@
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);
 }
 
-/* === SIDEBAR === */
 .sidebar {
     -fx-background-color: -color-bg-sidebar;
     -fx-padding: 10px;
@@ -271,31 +265,40 @@
     -fx-background-radius: 6px;
     -fx-pref-width: 180px;
     -fx-pref-height: 40px;
-    -fx-alignment: CENTER;
+    -fx-alignment: CENTER_LEFT; /* Changed to left for icon alignment */
+    -fx-padding: 0 15px;
 }
 
 .sidebar-button {
-    -fx-background-color: #F3F4F6;
-    -fx-text-fill: -color-text-primary;
+    -fx-background-color: transparent;
+    -fx-text-fill: -color-text-on-dark;
+    -fx-opacity: 0.8;
 }
 .sidebar-button:hover {
-    -fx-background-color: #E5E7EB;
+    -fx-background-color: rgba(255,255,255,0.1);
+    -fx-opacity: 1.0;
 }
 
 .sidebar-button-active, .sidebar-button:pressed {
     -fx-background-color: -color-primary-accent;
     -fx-text-fill: -color-text-on-dark;
+    -fx-opacity: 1.0;
 }
 
-/* === WELCOME & HEADER SECTION === */
+.sidebar-button .ikonli-font-icon {
+    -fx-icon-color: -color-text-on-dark;
+    -fx-icon-size: 16;
+}
+
+
 .avatar-circle {
     -fx-background-color: #D1D5DB;
-    -fx-background-radius: 50; /* Membuatnya bulat */
+    -fx-background-radius: 50;
     -fx-min-width: 60px;
     -fx-min-height: 60px;
     -fx-max-width: 60px;
     -fx-max-height: 60px;
-    -fx-alignment: center; /* <<< BARIS INI MEMPERBAIKI POSISI TEKS "T" */
+    -fx-alignment: center;
 }
 
 .avatar-text {
@@ -315,7 +318,6 @@
     -fx-text-fill: -color-text-secondary;
 }
 
-/* === PROGRESS OVERVIEW SECTION === */
 .section-title {
     -fx-font-size: 18px;
     -fx-font-weight: bold;
@@ -326,20 +328,37 @@
     -fx-icon-size: 20;
 }
 
-.progress-circular-indicator { -fx-progress-color: #22C55E; -fx-min-width: 80px; -fx-min-height: 80px; }
-.progress-circular-indicator .percentage { -fx-fill: -color-text-primary; -fx-font-size: 20px; -fx-font-weight: bold; }
-.progress-circular-indicator .track { -fx-background-color: #E5E7EB; }
+/* NEW: Dashboard Statistik Cards */
+.stat-card {
+    -fx-background-color: white;
+    -fx-padding: 15px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);
+}
 
-.info-tag-total, .info-tag-done, .info-tag-active { -fx-padding: 5px 12px; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-font-weight: bold; }
-.info-tag-total { -fx-background-color: #DBEAFE; -fx-text-fill: #2563EB; }
-.info-tag-done { -fx-background-color: #D1FAE5; -fx-text-fill: #059669; }
-.info-tag-active { -fx-background-color: #FEF3C7; -fx-text-fill: #D97706; }
+.stat-card-title {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+.stat-card-value {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.stat-card .ikonli-font-icon {
+    -fx-icon-size: 24px;
+}
+#totalCard .ikonli-font-icon { -fx-icon-color: #3B82F6; } /* Blue */
+#doneCard .ikonli-font-icon { -fx-icon-color: #10B981; } /* Green */
+#activeCard .ikonli-font-icon { -fx-icon-color: #F59E0B; } /* Amber */
+
 
 .next-task-info { -fx-background-color: #F3F4F6; -fx-padding: 8px; -fx-background-radius: 6px; }
 .next-task-info .ikonli-font-icon { -fx-icon-color: -color-text-secondary; }
 .next-task-info .label { -fx-text-fill: -color-text-secondary; -fx-font-size: 13px; }
 
-/* === TASK TABLE === */
 .tree-table-view { -fx-background-color: transparent; -fx-border-color: transparent; }
 .tree-table-view .column-header-background { -fx-background-color: transparent; }
 .tree-table-view .column-header, .tree-table-view .filler { -fx-background-color: transparent; -fx-border-color: transparent transparent -color-border transparent; -fx-border-width: 2px; }
@@ -347,7 +366,15 @@
 .tree-table-view .tree-table-cell { -fx-border-color: transparent; -fx-padding: 12px 8px; -fx-font-size: 14px; }
 .tree-table-view .tree-table-row-cell { -fx-border-color: transparent transparent -color-border transparent; -fx-border-width: 1px; }
 
-/* === ACTION BUTTONS & ICONS (KEMBALI BERWARNA) === */
+/* NEW: Zebra-striping for table rows */
+.tree-table-view .tree-table-row-cell:odd {
+    -fx-background-color: #F9FAFB;
+}
+.tree-table-view .tree-table-row-cell:hover {
+    -fx-background-color: #F0F4FF;
+}
+
+
 .action-icon { -fx-icon-size: 16; -fx-cursor: hand; -fx-opacity: 0.7; }
 .action-icon:hover { -fx-opacity: 1.0; }
 
@@ -363,16 +390,14 @@
     -fx-background-radius: 4px;
 }
 .complete-button.completed {
-    -fx-background-color: #FFC107; /* Kuning */
+    -fx-background-color: #FFC107; /* Yellow */
     -fx-text-fill: black;
 }
 .complete-button.pending {
-    -fx-background-color: #28A745; /* Hijau */
+    -fx-background-color: #28A745; /* Green */
     -fx-text-fill: white;
 }
 
-
-/* === PRIORITY LABELS (WARNA BARU) === */
 .priority-label {
     -fx-padding: 4px 10px;
     -fx-background-radius: 12px;
@@ -380,36 +405,40 @@
     -fx-font-size: 12px;
 }
 .priority-high {
-    -fx-background-color: #FEE2E2; /* Merah Muda */
-    -fx-text-fill: #B91C1C; /* Merah Tua */
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #B91C1C;
 }
 .priority-medium {
-    -fx-background-color: #DBEAFE; /* Biru Muda */
-    -fx-text-fill: #1E40AF; /* Biru Tua */
+    -fx-background-color: #DBEAFE;
+    -fx-text-fill: #1E40AF;
 }
 .priority-low {
-    -fx-background-color: #D1FAE5; /* Hijau Muda */
-    -fx-text-fill: #047857; /* Hijau Tua */
+    -fx-background-color: #D1FAE5;
+    -fx-text-fill: #047857;
 }
 
-//tambah tugas
-/* === Add Task Form Styles === */
+/* ==========================================================================
+   ADD TASK & SUBTASK PAGES (REVISED)
+   ========================================================================== */
+
+/* Background for the entire Add/Edit Task window */
 .add-task-pane {
-    -fx-background-color: #D6DCE5; /* Warna latar luar abu-abu kebiruan muda */
+    -fx-background-color: linear-gradient(to bottom right, #A7B3E2, #677BC3);
 }
 
+/* Main white card container for the form */
 .add-task-main-vbox {
-    -fx-background-color: #FFFFFF; /* Warna kartu putih */
-    -fx-background-radius: 20px; /* Sudut membulat untuk kartu */
-    -fx-padding: 25px 40px; /* Padding internal kartu */
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 15, 0.4, 0, 4); /* Bayangan kartu */
-    -fx-max-width: 800px; /* Batasi lebar maksimum form */
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 20px;
+    -fx-padding: 25px 40px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 15, 0.4, 0, 4);
+    -fx-max-width: 800px;
 }
 
 .main-title-text {
     -fx-font-size: 26px;
     -fx-font-weight: bold;
-    -fx-text-fill: #333B4F; /* Teks biru tua keabuan */
+    -fx-text-fill: #333B4F;
     -fx-padding-bottom: 2px;
     -fx-alignment: CENTER;
     -fx-max-width: Infinity;
@@ -417,7 +446,7 @@
 
 .sub-title-text {
     -fx-font-size: 16px;
-    -fx-text-fill: #5A647E; /* Teks abu-abu kebiruan */
+    -fx-text-fill: #5A647E;
     -fx-alignment: CENTER;
     -fx-max-width: Infinity;
 }
@@ -431,7 +460,7 @@
 }
 
 .form-column {
-    -fx-pref-width: 300px; /* Beri lebar preferensi untuk setiap kolom form */
+    -fx-pref-width: 300px;
 }
 
 .form-label-above {
@@ -439,181 +468,6 @@
     -fx-text-fill: #4F5A73;
     -fx-font-weight: bold;
     -fx-padding: 10px 0 3px 0;
-}
-
-.form-input {
-    -fx-pref-height: 38px;
-    -fx-font-size: 14px;
-    -fx-background-color: #F0F2F5; /* Latar input abu-abu muda */
-    -fx-background-radius: 8px;
-    -fx-border-radius: 8px;
-    -fx-border-color: #CED4DA; /* Border abu-abu muda */
-    -fx-border-width: 1px;
-    -fx-padding: 5px 10px;
-}
-
-.form-input:focused {
-    -fx-border-color: #6C7DF8; /* Warna border saat fokus - biru muda */
-    -fx-background-color: white;
-    -fx-effect: dropshadow(gaussian, rgba(108,125,248,0.3), 5, 0, 0, 0);
-}
-
-.text-area.form-input {
-    -fx-pref-height: 90px;
-}
-
-.date-picker.form-input .arrow-button {
-    -fx-padding: 5px;
-}
-.date-picker.form-input .text-field { /* Agar prompt text di datepicker terlihat */
-    -fx-background-color: transparent;
-}
-
-.combo-box-base.form-input {
-     -fx-background-color: #F0F2F5;
-     -fx-background-radius: 8px;
-     -fx-border-radius: 8px;
-     -fx-border-color: #CED4DA;
-     -fx-border-width: 1px;
-}
-.combo-box-base.form-input:focused {
-    -fx-border-color: #6C7DF8;
-    -fx-background-color: white;
-}
-.combo-box-base.form-input .arrow {
-    -fx-background-color: #A0A8B8;
-}
-
-
-.spinner.form-input .increment-arrow-button,
-.spinner.form-input .decrement-arrow-button {
-    -fx-background-color: #E0E4E8;
-    -fx-background-radius: 0 6px 6px 0; /* Untuk increment */
-}
-.spinner.form-input .decrement-arrow-button {
-    -fx-background-radius: 6px 0 0 6px;
-}
-.spinner.form-input .increment-arrow-button:hover,
-.spinner.form-input .decrement-arrow-button:hover {
-    -fx-background-color: #D0D4D8;
-}
-.spinner.form-input .text-field { /* Agar prompt text di spinner (jika ada) atau nilai terlihat */
-    -fx-background-color: transparent;
-}
-
-
-.form-label-progress {
-    -fx-font-size: 13px;
-    -fx-text-fill: #4F5A73;
-}
-
-.attachment-name {
-    -fx-font-style: italic;
-    -fx-text-fill: #555575;
-    -fx-padding: 5px 0 0 0;
-}
-
-.form-button-secondary { /* Untuk tombol "Pilih File..." */
-    -fx-background-color: #E8EAED;
-    -fx-text-fill: #3C4043;
-    -fx-font-size: 13px;
-    -fx-padding: 6px 12px;
-    -fx-background-radius: 6px;
-}
-.form-button-secondary:hover {
-    -fx-background-color: #DADCE0;
-}
-
-.remove-button-form { /* Tombol X untuk hapus lampiran */
-    -fx-background-color: #E74C3C;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-background-radius: 15px; /* Bulat */
-    -fx-padding: 1px 6px 2px 6px;
-    -fx-font-size: 10px;
-}
-.remove-button-form:hover {
-    -fx-background-color: #C0392B;
-}
-
-.form-action-buttons { /* HBox untuk tombol Save & Cancel */
-    -fx-alignment: CENTER;
-}
-
-.save-button { /* Sudah ada dari UI target, sesuaikan jika perlu */
-    -fx-background-color: #6C7DF8; /* Biru dari target */
-    -fx-text-fill: white;
-    -fx-font-size: 15px;
-    -fx-font-weight: bold;
-    -fx-background-radius: 20px; /* Lebih membulat */
-    -fx-padding: 10px 30px;
-    -fx-pref-height: 40px;
-}
-.save-button:hover {
-    -fx-background-color: #5A6ACC;
-}
-
-.cancel-button-form { /* Style untuk tombol cancel form */
-    -fx-background-color: #FFFFFF;
-    -fx-text-fill: #5F6368;
-    -fx-font-size: 15px;
-    -fx-font-weight: bold;
-    -fx-border-color: #DADCE0;
-    -fx-border-width: 1.5px;
-    -fx-background-radius: 20px; /* Lebih membulat */
-    -fx-border-radius: 20px;
-    -fx-padding: 9px 29px;
-    -fx-pref-height: 40px;
-}
-.cancel-button-form:hover {
-    -fx-background-color: #F1F3F4;
-}
-
-
-// sub tugas
-
-/* Anda mungkin sudah memiliki beberapa style ini, pastikan ada dan sesuai. */
-
-.add-task-pane {
-    -fx-background-color: transparent; /* Atau warna latar abu-abu/biru pucat jika window-nya terpisah */
-}
-
-.add-task-main-vbox {
-    -fx-background-color: #FFFFFF;
-    -fx-background-radius: 15px;
-    -fx-padding: 25px 30px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.3, 0, 3);
-}
-
-.main-title-text {
-    -fx-font-size: 22px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #333B4F;
-}
-
-.sub-title-text {
-    -fx-font-size: 16px;
-    -fx-text-fill: #5A647E;
-}
-
-.parent-info-label {
-    -fx-font-style: italic;
-    -fx-text-fill: #5A647E;
-    -fx-padding-bottom: 10px;
-    -fx-border-color: transparent transparent #E0E0E8 transparent;
-    -fx-border-width: 1px;
-}
-
-.title-icon {
-    -fx-icon-color: #333B4F;
-    -fx-icon-size: 22;
-}
-
-.form-label-above {
-    -fx-font-size: 13px;
-    -fx-text-fill: #4F5A73;
-    -fx-font-weight: bold;
-    -fx-padding: 8px 0 3px 0;
 }
 
 .form-input {
@@ -634,32 +488,176 @@
 }
 
 .text-area.form-input {
-    -fx-pref-height: 150px; /* Sesuaikan tinggi TextArea jika perlu */
+    -fx-pref-height: 90px;
+}
+
+.date-picker.form-input .arrow-button {
+    -fx-padding: 5px;
+}
+.date-picker.form-input .text-field {
+    -fx-background-color: transparent;
+}
+
+.combo-box-base.form-input {
+     -fx-background-color: #F0F2F5;
+     -fx-background-radius: 8px;
+     -fx-border-radius: 8px;
+     -fx-border-color: #CED4DA;
+     -fx-border-width: 1px;
+}
+.combo-box-base.form-input:focused {
+    -fx-border-color: #6C7DF8;
+    -fx-background-color: white;
+}
+.combo-box-base.form-input .arrow {
+    -fx-background-color: #A0A8B8;
+}
+
+.spinner.form-input .increment-arrow-button,
+.spinner.form-input .decrement-arrow-button {
+    -fx-background-color: #E0E4E8;
+    -fx-background-radius: 0 6px 6px 0;
+}
+.spinner.form-input .decrement-arrow-button {
+    -fx-background-radius: 6px 0 0 6px;
+}
+.spinner.form-input .increment-arrow-button:hover,
+.spinner.form-input .decrement-arrow-button:hover {
+    -fx-background-color: #D0D4D8;
+}
+.spinner.form-input .text-field {
+    -fx-background-color: transparent;
+}
+
+/* NEW: Styles for Priority ToggleButtons */
+.priority-toggle-button {
+    -fx-background-color: #F0F2F5;
+    -fx-text-fill: #4F5A73;
+    -fx-border-color: #CED4DA;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-font-size: 13px;
+    -fx-padding: 6px 14px;
+}
+
+.priority-toggle-button:hover {
+    -fx-background-color: #E8EAED;
+}
+
+.priority-toggle-button.high:selected {
+    -fx-background-color: #FEE2E2;
+    -fx-text-fill: #B91C1C;
+    -fx-border-color: #FEE2E2;
+}
+.priority-toggle-button.medium:selected {
+    -fx-background-color: #DBEAFE;
+    -fx-text-fill: #1E40AF;
+    -fx-border-color: #DBEAFE;
+}
+.priority-toggle-button.low:selected {
+    -fx-background-color: #D1FAE5;
+    -fx-text-fill: #047857;
+    -fx-border-color: #D1FAE5;
+}
+
+
+/* NEW: Styles for Attachment Drag-and-Drop Area */
+.attachment-drop-zone {
+    -fx-background-color: #F8F9FA;
+    -fx-border-color: #CED4DA;
+    -fx-border-style: dashed;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 20px;
+    -fx-alignment: center;
+}
+.attachment-drop-zone:hover {
+    -fx-border-color: #6C7DF8;
+    -fx-cursor: hand;
+}
+.drop-zone-text {
+    -fx-font-size: 14px;
+    -fx-text-fill: #5A647E;
+}
+.attachment-preview {
+    -fx-background-color: #E8EAED;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 12px;
+    -fx-alignment: center-left;
+    -fx-spacing: 10;
+}
+.attachment-preview-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #333B4F;
+    -fx-font-weight: bold;
+}
+.remove-button-form {
+    -fx-background-color: #E74C3C;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 15px;
+    -fx-padding: 1px 6px 2px 6px;
+    -fx-font-size: 10px;
+}
+.remove-button-form:hover {
+    -fx-background-color: #C0392B;
+}
+
+/* Main action buttons */
+.form-action-buttons {
+    -fx-alignment: CENTER;
 }
 
 .save-button {
     -fx-background-color: #6C7DF8;
     -fx-text-fill: white;
-    -fx-font-size: 14px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
     -fx-background-radius: 20px;
-    -fx-padding: 8px 25px;
+    -fx-padding: 10px 30px;
+    -fx-pref-height: 40px;
 }
 .save-button:hover {
     -fx-background-color: #5A6ACC;
 }
 
+/* REVISED: Ghost button style for Cancel */
 .cancel-button-form {
-    -fx-background-color: #FFFFFF;
+    -fx-background-color: transparent;
     -fx-text-fill: #5F6368;
-    -fx-font-size: 14px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
     -fx-border-color: #DADCE0;
     -fx-border-width: 1.5px;
     -fx-background-radius: 20px;
     -fx-border-radius: 20px;
-    -fx-padding: 7px 24px;
+    -fx-padding: 9px 29px;
+    -fx-pref-height: 40px;
 }
 .cancel-button-form:hover {
     -fx-background-color: #F1F3F4;
+}
+
+
+/* ==========================================================================
+   ADD SUBTASK DIALOG
+   ========================================================================== */
+.add-subtask-main-vbox {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 15px;
+    -fx-padding: 25px 30px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.3, 0, 3);
+}
+
+.title-icon {
+    -fx-icon-color: #333B4F;
+    -fx-icon-size: 22;
+}
+
+
+/* FIX: Mengubah warna teks pada baris yang dipilih agar tetap terbaca */
+.tree-table-view .tree-table-row-cell:selected .tree-table-cell,
+.tree-table-view .tree-table-row-cell:selected .text {
+    -fx-text-fill: -color-text-primary; /* Menggunakan variabel warna teks utama Anda */
 }
