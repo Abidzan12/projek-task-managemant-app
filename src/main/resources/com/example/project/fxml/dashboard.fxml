@@ -3,64 +3,95 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TreeTableColumn?>
 <?import javafx.scene.control.TreeTableView?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.layout.Priority?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
+<?import javafx.scene.layout.StackPane?>
 
-<BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.controller.DashboardController" prefHeight="700.0" prefWidth="1000.0" styleClass="dashboard-background">
-
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1280.0" styleClass="dashboard-background" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.project.controller.DashboardController">
     <left>
-        <VBox fx:id="sidebarPane" spacing="15.0" styleClass="sidebar" prefWidth="220.0">
-            <padding>
-                <Insets top="20.0" right="10.0" bottom="20.0" left="10.0" />
-            </padding>
+        <VBox fx:id="sidebar" alignment="TOP_CENTER" prefWidth="220.0" spacing="10.0" styleClass="sidebar" BorderPane.alignment="CENTER">
             <children>
-                <Label fx:id="sidebarUserNameLabel" text="Hi, [Nama User]" styleClass="sidebar-greeting"/>
-                <Button fx:id="navDashboardButton" text="Dashboard" styleClass="sidebar-button" maxWidth="Infinity" onAction="#onShowAll" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="navListTasksButton" text="Daftar Tugas" styleClass="sidebar-button" maxWidth="Infinity" onAction="#onShowAll" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="navAddTaskButton" text="Tambah Tugas" styleClass="sidebar-button" maxWidth="Infinity" onAction="#onAddTask" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="navPendingTasksButton" text="Belum Selesai" styleClass="sidebar-button" maxWidth="Infinity" onAction="#onShowPending" HBox.hgrow="ALWAYS"/>
-                <Button fx:id="navCompletedTasksButton" text="Tugas Selesai" styleClass="sidebar-button" maxWidth="Infinity" onAction="#onShowCompleted" HBox.hgrow="ALWAYS"/>
+                <Label styleClass="menu-header" text="Menu" />
+                <Button fx:id="navDashboardButton" onAction="#onShowDashboard" mnemonicParsing="false" prefHeight="45.0" prefWidth="200.0" styleClass="sidebar-button" text="Dashboard" />
+                <Button fx:id="navListTasksButton" onAction="#onShowAll" mnemonicParsing="false" prefHeight="45.0" prefWidth="200.0" styleClass="sidebar-button" text="Daftar Tugas" />
+                <Button fx:id="navAddTaskButton" onAction="#onAddTask" mnemonicParsing="false" prefHeight="45.0" prefWidth="200.0" styleClass="sidebar-button" text="Tambah Tugas" />
+                <Button fx:id="navCompletedTasksButton" onAction="#onShowCompleted" mnemonicParsing="false" prefHeight="45.0" prefWidth="200.0" styleClass="sidebar-button" text="Tugas Selesai" />
             </children>
+            <padding>
+                <Insets top="15.0" />
+            </padding>
         </VBox>
     </left>
-
     <center>
-        <VBox fx:id="mainContentArea" spacing="20.0" styleClass="main-content-area">
-            <padding>
-                <Insets top="20.0" right="20.0" bottom="20.0" left="20.0" />
-            </padding>
+        <VBox styleClass="main-content-area" spacing="20.0" BorderPane.alignment="CENTER">
             <children>
-                <HBox alignment="CENTER_LEFT" spacing="20.0" styleClass="header-section">
+                <HBox fx:id="welcomeSection" alignment="CENTER_LEFT" styleClass="card-light" spacing="20.0">
                     <children>
-                        <ImageView fx:id="clockImageView" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true"/>
-                        <VBox HBox.hgrow="ALWAYS">
-                            <Label fx:id="greetingLabel" text="Selamat Pagi, [Nama User]!" styleClass="greeting-text"/>
-                            <Label fx:id="taskSummaryLabel" text="Anda memiliki X tugas mendekati deadline." styleClass="summary-text"/>
+                        <StackPane styleClass="avatar-circle">
+                            <Label fx:id="avatarInitialLabel" text="N" styleClass="avatar-text" />
+                        </StackPane>
+                        <VBox>
+                            <Label fx:id="greetingLabel" styleClass="welcome-title" text="Welcome, (Name) !" />
+                            <Label styleClass="welcome-subtitle" text="You're almost there. Keep it up!" />
                         </VBox>
                     </children>
-                    <VBox.margin>
-                        <Insets bottom="10.0" />
-                    </VBox.margin>
                 </HBox>
-
-                <TreeTableView fx:id="taskTreeTable" VBox.vgrow="ALWAYS">
-                    <columns>
-                        <TreeTableColumn fx:id="colName" text="Tugas" prefWidth="250.0"/>
-                        <TreeTableColumn fx:id="colDescription" text="Deskripsi" prefWidth="300.0"/>
-                        <TreeTableColumn fx:id="colCourse" text="Mata Kuliah" prefWidth="150.0"/>
-                        <TreeTableColumn fx:id="colDeadline" text="Deadline" prefWidth="120.0"/>
-                        <TreeTableColumn fx:id="colPriority" text="Prioritas" prefWidth="90.0"/>
-                        <TreeTableColumn fx:id="colProgress" text="Progress (%)" prefWidth="80.0" style="-fx-alignment: CENTER;"/>
-                        <TreeTableColumn fx:id="colStatus" text="Status" prefWidth="100.0"/>
-                        <TreeTableColumn fx:id="colAttachment" text="Lampiran" prefWidth="70.0" style="-fx-alignment: CENTER;"/>
-                        <TreeTableColumn fx:id="colAction" text="Aksi" prefWidth="180.0" style="-fx-alignment: CENTER;"/>
-                    </columns>
-                </TreeTableView>
+                <VBox fx:id="progressOverviewSection" styleClass="card-light" spacing="15.0">
+                    <children>
+                        <Label styleClass="section-title" text="Progress Overview" />
+                        <HBox spacing="20.0" alignment="CENTER_LEFT">
+                            <children>
+                                <ProgressIndicator fx:id="progressIndicator" progress="0.0" styleClass="progress-circular-indicator" />
+                                <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                    <children>
+                                        <HBox spacing="10.0">
+                                            <children>
+                                                <Label fx:id="totalTaskLabel" styleClass="info-tag-total" text="Total: 0" />
+                                                <Label fx:id="doneTaskLabel" styleClass="info-tag-done" text="Done: 0" />
+                                                <Label fx:id="activeTaskLabel" styleClass="info-tag-active" text="Active: 0" />
+                                            </children>
+                                        </HBox>
+                                        <HBox alignment="CENTER_LEFT" spacing="8.0" styleClass="next-task-info">
+                                            <children>
+                                                <FontIcon iconLiteral="fas-calendar-alt" iconSize="14" />
+                                                <Label fx:id="nextTaskLabel" text="Next: -" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </HBox>
+                    </children>
+                </VBox>
+                <VBox styleClass="card-light" VBox.vgrow="ALWAYS" spacing="10.0">
+                    <children>
+                        <HBox alignment="CENTER_LEFT" spacing="10.0">
+                            <children>
+                                <FontIcon iconLiteral="fas-book-open" iconSize="18" styleClass="section-title-icon"/>
+                                <Label styleClass="section-title" text="Your Task" />
+                            </children>
+                        </HBox>
+                        <TreeTableView fx:id="taskTreeTable" VBox.vgrow="ALWAYS">
+                            <columns>
+                                <TreeTableColumn fx:id="colName" prefWidth="150.0" text="Tugas" />
+                                <TreeTableColumn fx:id="colDescription" prefWidth="150.0" text="Deskripsi" />
+                                <TreeTableColumn fx:id="colCourse" prefWidth="100.0" text="Mata Kuliah" />
+                                <TreeTableColumn fx:id="colDeadline" prefWidth="120.0" text="Deadline" />
+                                <TreeTableColumn fx:id="colPriority" prefWidth="80.0" text="Prioritas" />
+                                <TreeTableColumn fx:id="colProgress" prefWidth="100.0" text="Progress" />
+                                <TreeTableColumn fx:id="colStatus" prefWidth="100.0" text="Status" />
+                                <TreeTableColumn fx:id="colAttachment" prefWidth="70.0" text="Lampiran" />
+                                <TreeTableColumn fx:id="colAction" prefWidth="120.0" text="Aksi" />
+                            </columns>
+                        </TreeTableView>
+                    </children>
+                </VBox>
             </children>
         </VBox>
     </center>

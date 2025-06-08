@@ -211,208 +211,185 @@
     -fx-background-color: #D1D9FF;
 }
 
-.status-label, .status-label-register {
+.status-label, .status-label_register {
     -fx-font-size: 13px;
     -fx-padding: 10px 0 0 0;
 }
 
 //dasbord
+/* === FONT & ROOT VARIABLES === */
+.root {
+    -fx-font-family: "Arial", sans-serif;
+    -fx-base: #EBEBEB;
 
+    /* Palet Warna */
+    -color-bg-default: #EBEBEB;
+    -color-bg-sidebar: #3F83F8;
+    -color-bg-card: #FFFFFF;
+    -color-primary-accent: #EF4444; /* Merah untuk aksen aktif */
+    -color-text-primary: #1F2937;
+    -color-text-secondary: #6B7280;
+    -color-text-on-dark: #FFFFFF;
+    -color-border: #D1D5DB;
+}
 
+/* === MAIN LAYOUT & CARDS === */
 .dashboard-background {
-    -fx-background-color: #527EDC;
-}
-
-.sidebar {
-    -fx-background-color: #456ABF;
-    -fx-padding: 15px;
-    -fx-spacing: 10px;
-}
-
-.sidebar-greeting {
-    -fx-font-size: 18px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #FFFFFF;
-    -fx-padding-bottom: 20px;
-}
-
-.sidebar-button {
-    -fx-background-color: #6F8CD6;
-    -fx-text-fill: #E0EFFF;
-    -fx-font-size: 14px;
-    -fx-font-weight: normal;
-    -fx-pref-height: 40px;
-    -fx-alignment: center-left;
-    -fx-padding: 0 0 0 15px;
-    -fx-background-radius: 5px;
-    -fx-border-radius: 5px;
-    -fx-border-width: 0px;
-}
-
-.sidebar-button:hover {
-    -fx-background-color: #7F99E0;
-}
-
-.sidebar-button-active {
-    -fx-background-color: #FFFFFF;
-    -fx-text-fill: #3E65BF;
-    -fx-font-weight: bold;
+    -fx-background-color: -color-bg-default;
 }
 
 .main-content-area {
-    -fx-background-color: #F0F2F5;
-    -fx-padding: 25px;
-    -fx-background-radius: 10px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0.2, 0, 3);
+    -fx-background-color: -color-bg-default;
+    -fx-padding: 20px;
+    -fx-spacing: 20;
 }
 
-.header-section {
-    -fx-background-color: transparent;
-    -fx-padding: 10px 0px 20px 0px;
-    -fx-border-color: transparent;
-    -fx-border-width: 0px;
-    -fx-margin-bottom: 10px;
+.card-light {
+    -fx-background-color: -color-bg-card;
+    -fx-background-radius: 8px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 8, 0, 0, 2);
 }
 
-.header-section .label {
+/* === SIDEBAR === */
+.sidebar {
+    -fx-background-color: -color-bg-sidebar;
+    -fx-padding: 10px;
+    -fx-spacing: 10;
+    -fx-alignment: TOP_CENTER;
+}
+
+.menu-header {
     -fx-font-size: 24px;
     -fx-font-weight: bold;
-    -fx-text-fill: #202124;
-    -fx-alignment: center;
+    -fx-text-fill: -color-text-on-dark;
+    -fx-padding: 15px;
 }
 
-.greeting-text {
-    -fx-font-size: 20px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #3C4043;
-}
-
-.summary-text {
+.sidebar-button, .sidebar-button-active {
     -fx-font-size: 14px;
-    -fx-text-fill: #5F6368;
-}
-
-.top-tab-buttons {
-    -fx-padding: 0 0 10px 0;
-    -fx-spacing: 5px;
-    -fx-alignment: center-left;
-}
-
-.top-tab-buttons .button {
-    -fx-background-color: #E8EAED;
-    -fx-text-fill: #3C4043;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
-    -fx-padding: 8px 20px;
     -fx-background-radius: 6px;
-    -fx-border-radius: 6px;
-    -fx-border-color: transparent;
-    -fx-border-width: 0px;
+    -fx-pref-width: 180px;
+    -fx-pref-height: 40px;
+    -fx-alignment: CENTER;
 }
 
-.top-tab-buttons .button:hover {
-    -fx-background-color: #DADCE0;
+.sidebar-button {
+    -fx-background-color: #F3F4F6;
+    -fx-text-fill: -color-text-primary;
+}
+.sidebar-button:hover {
+    -fx-background-color: #E5E7EB;
 }
 
-.top-tab-buttons .button.active-tab {
-    -fx-background-color: #527EDC;
+.sidebar-button-active, .sidebar-button:pressed {
+    -fx-background-color: -color-primary-accent;
+    -fx-text-fill: -color-text-on-dark;
+}
+
+/* === WELCOME & HEADER SECTION === */
+.avatar-circle {
+    -fx-background-color: #D1D5DB;
+    -fx-background-radius: 50; /* Membuatnya bulat */
+    -fx-min-width: 60px;
+    -fx-min-height: 60px;
+    -fx-max-width: 60px;
+    -fx-max-height: 60px;
+    -fx-alignment: center; /* <<< BARIS INI MEMPERBAIKI POSISI TEKS "T" */
+}
+
+.avatar-text {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.welcome-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+
+.welcome-subtitle {
+    -fx-font-size: 14px;
+    -fx-text-fill: -color-text-secondary;
+}
+
+/* === PROGRESS OVERVIEW SECTION === */
+.section-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -color-text-primary;
+}
+.section-title-icon {
+    -fx-icon-color: -color-text-primary;
+    -fx-icon-size: 20;
+}
+
+.progress-circular-indicator { -fx-progress-color: #22C55E; -fx-min-width: 80px; -fx-min-height: 80px; }
+.progress-circular-indicator .percentage { -fx-fill: -color-text-primary; -fx-font-size: 20px; -fx-font-weight: bold; }
+.progress-circular-indicator .track { -fx-background-color: #E5E7EB; }
+
+.info-tag-total, .info-tag-done, .info-tag-active { -fx-padding: 5px 12px; -fx-background-radius: 6px; -fx-font-size: 12px; -fx-font-weight: bold; }
+.info-tag-total { -fx-background-color: #DBEAFE; -fx-text-fill: #2563EB; }
+.info-tag-done { -fx-background-color: #D1FAE5; -fx-text-fill: #059669; }
+.info-tag-active { -fx-background-color: #FEF3C7; -fx-text-fill: #D97706; }
+
+.next-task-info { -fx-background-color: #F3F4F6; -fx-padding: 8px; -fx-background-radius: 6px; }
+.next-task-info .ikonli-font-icon { -fx-icon-color: -color-text-secondary; }
+.next-task-info .label { -fx-text-fill: -color-text-secondary; -fx-font-size: 13px; }
+
+/* === TASK TABLE === */
+.tree-table-view { -fx-background-color: transparent; -fx-border-color: transparent; }
+.tree-table-view .column-header-background { -fx-background-color: transparent; }
+.tree-table-view .column-header, .tree-table-view .filler { -fx-background-color: transparent; -fx-border-color: transparent transparent -color-border transparent; -fx-border-width: 2px; }
+.tree-table-view .column-header .label { -fx-text-fill: -color-text-secondary; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10px 8px; }
+.tree-table-view .tree-table-cell { -fx-border-color: transparent; -fx-padding: 12px 8px; -fx-font-size: 14px; }
+.tree-table-view .tree-table-row-cell { -fx-border-color: transparent transparent -color-border transparent; -fx-border-width: 1px; }
+
+/* === ACTION BUTTONS & ICONS (KEMBALI BERWARNA) === */
+.action-icon { -fx-icon-size: 16; -fx-cursor: hand; -fx-opacity: 0.7; }
+.action-icon:hover { -fx-opacity: 1.0; }
+
+.edit-icon { -fx-icon-color: #3182CE; }
+.delete-icon { -fx-icon-color: #E53E3E; }
+.add-subtask-icon { -fx-icon-color: #38A169; }
+
+.complete-button {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 10px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+.complete-button.completed {
+    -fx-background-color: #FFC107; /* Kuning */
+    -fx-text-fill: black;
+}
+.complete-button.pending {
+    -fx-background-color: #28A745; /* Hijau */
     -fx-text-fill: white;
 }
 
-.tree-table-view {
-    -fx-background-color: #FFFFFF;
-    -fx-border-color: #DADCE0;
-    -fx-border-width: 1px;
-    -fx-background-insets: 0;
-    -fx-border-radius: 6px;
-    -fx-background-radius: 6px;
-}
 
-.tree-table-view .column-header-background {
-    -fx-background-color: #F8F9FA;
-    -fx-border-color: transparent transparent #DADCE0 transparent;
-    -fx-border-width: 1px;
-}
-
-.tree-table-view .column-header .label {
-    -fx-text-fill: #202124;
-    -fx-font-weight: bold;
-    -fx-font-size: 13px;
-    -fx-padding: 10px 8px;
-}
-
-.tree-table-view .tree-table-cell {
-    -fx-padding: 10px 8px;
-    -fx-font-size: 13px;
-    -fx-text-fill: #3C4043;
-    -fx-border-color: transparent transparent #F1F3F4 transparent;
-    -fx-border-width: 0 0 1px 0;
-}
-
-.tree-table-view .tree-table-row-cell:selected {
-    -fx-background-color: #D6E2F9;
-}
-
-.tree-table-view .tree-table-row-cell:selected .tree-table-cell {
-    -fx-text-fill: #202124;
-}
-
-#taskTreeTable .ikonli-font-icon {
-    -fx-icon-size: 16;
-}
-
-#taskTreeTable .ikonli-font-icon:hover {
-    -fx-opacity: 0.7;
-}
-
-.action-button-form {
-    -fx-background-color: #527EDC;
-    -fx-text-fill: white;
-    -fx-font-weight: bold;
-    -fx-background-radius: 5;
-    -fx-padding: 8px 15px;
-}
-.action-button-form:hover{
-    -fx-background-color: #456ABF;
-}
-
-.cancel-button {
-    -fx-background-color: #E8EAED;
-    -fx-text-fill: #3C4043;
-    -fx-border-color: #DADCE0;
-    -fx-border-width: 1px;
-    -fx-background-radius: 5;
-    -fx-padding: 8px 15px;
-}
-.cancel-button:hover {
-    -fx-background-color: #DADCE0;
-}
-
+/* === PRIORITY LABELS (WARNA BARU) === */
 .priority-label {
-    -fx-padding: 3px 8px;
+    -fx-padding: 4px 10px;
     -fx-background-radius: 12px;
     -fx-font-weight: bold;
     -fx-font-size: 12px;
 }
-
-.priority-low {
-    -fx-background-color: #C8E6C9; /* Hijau Muda */
-    -fx-text-fill: #2E7D32; /* Hijau Tua */
-}
-
-.priority-medium {
-    -fx-background-color: #BBDEFB; /* Biru Muda */
-    -fx-text-fill: #0D47A1; /* Biru Tua */
-}
-
 .priority-high {
-    -fx-background-color: #FFCDD2; /* Merah Muda */
-    -fx-text-fill: #B71C1C; /* Merah Tua */
+    -fx-background-color: #FEE2E2; /* Merah Muda */
+    -fx-text-fill: #B91C1C; /* Merah Tua */
 }
-
-.priority-default {
-    -fx-background-color: #E0E0E0; /* Abu-abu */
-    -fx-text-fill: #424242; /* Abu-abu Tua */
+.priority-medium {
+    -fx-background-color: #DBEAFE; /* Biru Muda */
+    -fx-text-fill: #1E40AF; /* Biru Tua */
+}
+.priority-low {
+    -fx-background-color: #D1FAE5; /* Hijau Muda */
+    -fx-text-fill: #047857; /* Hijau Tua */
 }
 
 //tambah tugas
