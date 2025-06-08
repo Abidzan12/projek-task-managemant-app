@@ -591,3 +591,98 @@
 .cancel-button-form:hover {
     -fx-background-color: #F1F3F4;
 }
+
+
+// sub tugas
+
+/* Anda mungkin sudah memiliki beberapa style ini, pastikan ada dan sesuai. */
+
+.add-task-pane {
+    -fx-background-color: transparent; /* Atau warna latar abu-abu/biru pucat jika window-nya terpisah */
+}
+
+.add-task-main-vbox {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 15px;
+    -fx-padding: 25px 30px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0.3, 0, 3);
+}
+
+.main-title-text {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333B4F;
+}
+
+.sub-title-text {
+    -fx-font-size: 16px;
+    -fx-text-fill: #5A647E;
+}
+
+.parent-info-label {
+    -fx-font-style: italic;
+    -fx-text-fill: #5A647E;
+    -fx-padding-bottom: 10px;
+    -fx-border-color: transparent transparent #E0E0E8 transparent;
+    -fx-border-width: 1px;
+}
+
+.title-icon {
+    -fx-icon-color: #333B4F;
+    -fx-icon-size: 22;
+}
+
+.form-label-above {
+    -fx-font-size: 13px;
+    -fx-text-fill: #4F5A73;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 0 3px 0;
+}
+
+.form-input {
+    -fx-pref-height: 38px;
+    -fx-font-size: 14px;
+    -fx-background-color: #F0F2F5;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-border-color: #CED4DA;
+    -fx-border-width: 1px;
+    -fx-padding: 5px 10px;
+}
+
+.form-input:focused {
+    -fx-border-color: #6C7DF8;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(gaussian, rgba(108,125,248,0.3), 5, 0, 0, 0);
+}
+
+.text-area.form-input {
+    -fx-pref-height: 150px; /* Sesuaikan tinggi TextArea jika perlu */
+}
+
+.save-button {
+    -fx-background-color: #6C7DF8;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20px;
+    -fx-padding: 8px 25px;
+}
+.save-button:hover {
+    -fx-background-color: #5A6ACC;
+}
+
+.cancel-button-form {
+    -fx-background-color: #FFFFFF;
+    -fx-text-fill: #5F6368;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-border-color: #DADCE0;
+    -fx-border-width: 1.5px;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-padding: 7px 24px;
+}
+.cancel-button-form:hover {
+    -fx-background-color: #F1F3F4;
+}

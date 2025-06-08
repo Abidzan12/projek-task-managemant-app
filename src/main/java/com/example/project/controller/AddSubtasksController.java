@@ -4,14 +4,19 @@ import com.example.project.App;
 import com.example.project.model.Database;
 import com.example.project.model.Task;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.kordamp.ikonli.javafx.FontIcon;
+import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,7 +25,9 @@ public class AddSubtasksController {
     @FXML
     private Label parentTaskTitleLabel;
     @FXML
-    private TextArea subtasksTextArea;
+    private VBox subtasksContainer;
+    @FXML
+    private Button addMoreButton;
     @FXML
     private Button saveAllButton;
     @FXML
@@ -29,13 +36,51 @@ public class AddSubtasksController {
     private Task parentTask;
     private Integer currentUserId;
 
+    @FXML
+    public void initialize() {
+        addNewSubtaskField(); // Mulai dengan satu field input
+    }
+
     public void setParentTask(Task parentTask) {
         this.parentTask = parentTask;
         this.currentUserId = App.getCurrentUserId();
         if (parentTask != null) {
-            parentTaskTitleLabel.setText("Tambah Sub-Tugas untuk: " + parentTask.getName());
+            parentTaskTitleLabel.setText("untuk: " + parentTask.getName());
         }
     }
+
+    @FXML
+    private void handleAddMore() {
+        addNewSubtaskField();
+    }
+
+    private void addNewSubtaskField() {
+        TextField subtaskField = new TextField();
+        subtaskField.setPromptText("Nama sub-tugas baru...");
+        subtaskField.getStyleClass().add("form-input");
+        HBox.setHgrow(subtaskField, javafx.scene.layout.Priority.ALWAYS);
+
+        FontIcon removeIcon = new FontIcon(FontAwesomeSolid.TIMES_CIRCLE);
+        removeIcon.getStyleClass().add("remove-icon");
+        removeIcon.setIconSize(18);
+        removeIcon.setCursor(Cursor.HAND);
+
+        HBox newRow = new HBox(8, subtaskField, removeIcon);
+        newRow.setAlignment(Pos.CENTER_LEFT);
+
+        removeIcon.setOnMouseClicked(event -> {
+            // Jangan hapus baris terakhir
+            if (subtasksContainer.getChildren().size() > 1) {
+                subtasksContainer.getChildren().remove(newRow);
+            } else {
+                subtaskField.clear(); // Cukup kosongkan jika hanya satu
+            }
+        });
+
+        subtasksContainer.getChildren().add(newRow);
+        subtaskField.requestFocus();
+    }
+
 
     @FXML
     private void handleSaveAll() {
@@ -44,9 +89,11 @@ public class AddSubtasksController {
             return;
         }
 
-        String[] subtaskNames = subtasksTextArea.getText().split("\\n");
-        List<String> validNames = Arrays.stream(subtaskNames)
-                .map(String::trim)
+        List<String> validNames = subtasksContainer.getChildren().stream()
+                .filter(node -> node instanceof HBox)
+                .map(node -> (HBox) node)
+                .map(hbox -> (TextField) hbox.getChildren().get(0))
+                .map(textField -> textField.getText().trim())
                 .filter(name -> !name.isEmpty())
                 .collect(Collectors.toList());
 
