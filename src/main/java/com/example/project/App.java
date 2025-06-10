@@ -21,22 +21,35 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Kelas `App` adalah kelas utama yang menjalankan aplikasi JavaFX.
+ * Kelas ini menginisialisasi window (Stage), memuat scene awal (login),
+ * dan mengelola state global seperti session user.
+ */
 public class App extends Application {
 
+    // Variabel statis untuk menyimpan referensi ke Scene, Stage, dan data global
     private static Scene scene;
     private static Stage primaryStageRef;
-    private ScheduledExecutorService reminderScheduler;
-    private static Integer currentUserId = null;
-    private static HostServices hostServicesInstance;
+    private ScheduledExecutorService reminderScheduler; // (Tidak digunakan saat ini)
+    private static Integer currentUserId = null; // Menyimpan ID user yang sedang login (session)
+    private static HostServices hostServicesInstance; // Service untuk interaksi dengan OS (misal: buka file)
 
+    /**
+     * Method `start` adalah entry point utama untuk semua aplikasi JavaFX.
+     * Mirip seperti `main` di aplikasi konsol, method ini dipanggil saat aplikasi diluncurkan.
+     * @param stage Objek `Stage` utama (window aplikasi) yang dibuat oleh JavaFX.
+     */
     @Override
     public void start(Stage stage) throws IOException {
         primaryStageRef = stage;
         hostServicesInstance = getHostServices();
 
+        // Memuat tampilan awal yaitu halaman login.fxml
         Parent root = loadFXML("login");
         scene = new Scene(root);
 
+        // Menerapkan file CSS untuk styling ke seluruh aplikasi
         String cssPath = "/com/example/project/css/style.css";
         URL cssUrl = App.class.getResource(cssPath);
 
@@ -50,23 +63,41 @@ public class App extends Application {
         stage.setScene(scene);
         stage.setTitle("Task Manager");
         stage.show();
-
-        // Kita bisa menghapus scheduler atau membuatnya tetap berjalan untuk notifikasi saat app aktif
-        // startReminderService();
     }
 
+    /**
+     * Method untuk mendapatkan instance dari HostServices.
+     * HostServices digunakan untuk berinteraksi dengan environment desktop,
+     * seperti membuka browser atau file explorer.
+     * @return Instance HostServices.
+     */
     public static HostServices getHostServicesInstance() {
         return hostServicesInstance;
     }
 
+    /**
+     * Method untuk mengatur ID user yang sedang login.
+     * Ini adalah cara sederhana untuk mengelola "session" di aplikasi desktop.
+     * @param userId ID user yang berhasil login.
+     */
     public static void setCurrentUserId(Integer userId) {
         currentUserId = userId;
     }
 
+    /**
+     * Method untuk mendapatkan ID user yang sedang login dari "session".
+     * @return `Integer` berisi ID user, atau `null` jika tidak ada yang login.
+     */
     public static Integer getCurrentUserId() {
         return currentUserId;
     }
 
+    /**
+     * Method helper untuk mengganti tampilan (view) di window utama.
+     * Ini dilakukan dengan mengganti root node dari scene yang sedang aktif.
+     * @param fxml Nama file FXML yang akan dimuat (tanpa ekstensi .fxml).
+     * @throws IOException Jika file FXML tidak ditemukan.
+     */
     public static void setRoot(String fxml) throws IOException {
         Parent newRoot = loadFXML(fxml);
         if (scene != null && newRoot != null) {
@@ -76,20 +107,25 @@ public class App extends Application {
         }
     }
 
+    /**
+     * Method helper privat untuk memuat file FXML.
+     * `FXMLLoader` membaca file .fxml dan mengubahnya menjadi objek UI Java.
+     * @param fxml Nama file FXML yang akan dimuat.
+     * @return Objek `Parent` yang merupakan root dari layout FXML.
+     * @throws IOException Jika file FXML tidak ditemukan.
+     */
     private static Parent loadFXML(String fxml) throws IOException {
         String path = "/com/example/project/fxml/" + fxml + ".fxml";
-        URL fxmlLocation = App.class.getResource(path);
-        System.out.println("Mencoba memuat FXML: " + path);
-        System.out.println("URL FXML yang ditemukan: " + fxmlLocation);
-
-        if (fxmlLocation == null) {
-            throw new IOException("File FXML tidak ditemukan pada path: " + path + ". Pastikan path benar dan file ada di direktori resources yang ter-build.");
-        }
-
-        FXMLLoader loader = new FXMLLoader(fxmlLocation);
+        FXMLLoader loader = new FXMLLoader(App.class.getResource(path));
         return loader.load();
     }
 
+    /**
+     * Method untuk menampilkan notifikasi desktop asli (OS-native).
+     * Menggunakan `Platform.runLater` untuk memastikan kode yang memanipulasi UI
+     * dijalankan di JavaFX Application Thread.
+     * @param task Objek tugas yang informasinya akan ditampilkan di notifikasi.
+     */
     public static void showDesktopNotification(Task task) {
         Platform.runLater(() -> {
             String title = "Pengingat Tugas!";
@@ -105,7 +141,7 @@ public class App extends Application {
                     .position(Pos.TOP_RIGHT)
                     .hideAfter(Duration.seconds(15))
                     .onAction(event -> {
-                        System.out.println("Notifikasi untuk '" + task.getName() + "' diklik!");
+                        // Aksi saat notifikasi diklik: bawa window aplikasi ke depan.
                         if (primaryStageRef != null) {
                             primaryStageRef.setIconified(false);
                             primaryStageRef.toFront();
@@ -116,8 +152,11 @@ public class App extends Application {
         });
     }
 
-    // public void startReminderService() { ... } // Method ini sekarang menjadi opsional
-
+    /**
+     * Method `stop` dipanggil secara otomatis oleh JavaFX saat aplikasi ditutup.
+     * Tempat yang baik untuk melakukan proses cleanup, seperti menutup koneksi database
+     * atau menghentikan background thread.
+     */
     @Override
     public void stop() throws Exception {
         // if (reminderScheduler != null && !reminderScheduler.isShutdown()) {
@@ -126,8 +165,11 @@ public class App extends Application {
         super.stop();
     }
 
-
-
+    /**
+     * Method `main` adalah entry point standar untuk setiap aplikasi Java.
+     * Untuk aplikasi JavaFX, fungsinya hanya untuk memanggil `launch(args)`
+     * yang akan memulai lifecycle JavaFX dan memanggil method `start`.
+     */
     public static void main(String[] args) {
         launch(args);
     }

@@ -19,7 +19,7 @@
                 <VBox fx:id="sidebar" prefWidth="220.0" styleClass="sidebar" BorderPane.alignment="CENTER">
                     <children>
                         <Label styleClass="menu-header" text="Menu" />
-                        <Button fx:id="navDashboardButton" onAction="#onShowDashboard" styleClass="sidebar-button-active" text="Dashboard">
+                        <Button fx:id="navDashboardButton" onAction="#onShowDashboard" styleClass="sidebar-button" text="Dashboard">
                             <graphic>
                                 <FontIcon iconLiteral="fas-home" />
                             </graphic>
@@ -62,7 +62,8 @@
                         </HBox>
                         <HBox fx:id="statsCardBox" alignment="CENTER" spacing="20.0">
                             <children>
-                                <VBox HBox.hgrow="ALWAYS" styleClass="stat-card">
+                                <!-- PERUBAHAN DI SINI: Menambahkan fx:id="totalCard" -->
+                                <VBox fx:id="totalCard" HBox.hgrow="ALWAYS" styleClass="stat-card">
                                     <children>
                                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                                             <children>
@@ -73,7 +74,8 @@
                                         <Label fx:id="totalStatLabel" styleClass="stat-card-value" text="0" />
                                     </children>
                                 </VBox>
-                                <VBox HBox.hgrow="ALWAYS" styleClass="stat-card">
+                                <!-- PERUBAHAN DI SINI: Menambahkan fx:id="doneCard" -->
+                                <VBox fx:id="doneCard" HBox.hgrow="ALWAYS" styleClass="stat-card">
                                     <children>
                                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                                             <children>
@@ -84,7 +86,8 @@
                                         <Label fx:id="doneStatLabel" styleClass="stat-card-value" text="0" />
                                     </children>
                                 </VBox>
-                                <VBox HBox.hgrow="ALWAYS" styleClass="stat-card">
+                                <!-- PERUBAHAN DI SINI: Menambahkan fx:id="activeCard" -->
+                                <VBox fx:id="activeCard" HBox.hgrow="ALWAYS" styleClass="stat-card">
                                     <children>
                                         <HBox alignment="CENTER_LEFT" spacing="10.0">
                                             <children>
