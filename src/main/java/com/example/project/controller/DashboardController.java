@@ -30,14 +30,8 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Controller utama untuk halaman Dashboard.
- * Bertanggung jawab mengelola semua logika dan interaksi pengguna setelah login,
- * termasuk menampilkan daftar tugas, statistik, dan navigasi.
- */
 public class DashboardController {
 
-    // --- FXML Fields: Variabel yang terhubung ke elemen UI di file .fxml ---
     @FXML private TreeTableView<Task> taskTreeTable;
     @FXML private TreeTableColumn<Task, String> colName;
     @FXML private TreeTableColumn<Task, String> colDescription;
@@ -49,27 +43,23 @@ public class DashboardController {
     @FXML private TreeTableColumn<Task, String> colAttachment;
     @FXML private TreeTableColumn<Task, Void> colAction;
 
-    // --- Elemen UI Header ---
     @FXML private HBox welcomeSection;
     @FXML private Label avatarInitialLabel;
     @FXML private Label greetingLabel;
     @FXML private Label welcomeMessageLabel;
 
-    // --- Elemen UI Kartu Statistik ---
     @FXML private HBox statsCardBox;
     @FXML private Label totalStatLabel;
     @FXML private Label doneStatLabel;
     @FXML private Label activeStatLabel;
     @FXML private Label nextTaskLabel;
 
-    // --- Tombol Sidebar ---
     @FXML private VBox sidebar;
     @FXML private Button navDashboardButton;
     @FXML private Button navListTasksButton;
     @FXML private Button navAddTaskButton;
     @FXML private Button navCompletedTasksButton;
 
-    // --- Variabel Kelas ---
     private static Stage addTaskStage = null;
     private static Stage addSubtasksStage = null;
     private Integer currentUserId;
@@ -78,11 +68,6 @@ public class DashboardController {
     private String activeView = "dashboard";
 
 
-    /**
-     * Method `initialize` adalah entry point untuk controller ini.
-     * Dijalankan otomatis oleh JavaFX setelah UI (FXML) selesai dimuat.
-     * Berfungsi untuk setup awal, seperti mengambil session user, dan mengkonfigurasi tampilan.
-     */
     @FXML
     public void initialize() {
         this.currentUserId = App.getCurrentUserId();
@@ -105,10 +90,6 @@ public class DashboardController {
         Platform.runLater(() -> onShowDashboard(null));
     }
 
-    /**
-     * Method ini mengambil data user dari database (berdasarkan ID) dan
-     * menampilkan informasi sapaan di bagian header UI.
-     */
     private void loadUserInfo() {
         this.currentUserName = Database.getUserNameById(this.currentUserId);
         if (this.currentUserName == null || this.currentUserName.isEmpty()) {
@@ -126,9 +107,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Method ini memasang ikon dari library Ikonli ke setiap tombol navigasi di sidebar.
-     */
     private void setupSidebarIcons() {
         navDashboardButton.setGraphic(new FontIcon(FontAwesomeSolid.HOME));
         navListTasksButton.setGraphic(new FontIcon(FontAwesomeSolid.LIST_ALT));
@@ -136,11 +114,6 @@ public class DashboardController {
         navCompletedTasksButton.setGraphic(new FontIcon(FontAwesomeSolid.CHECK_SQUARE));
     }
 
-    /**
-     * Method ini melakukan setup untuk semua kolom pada TreeTableView.
-     * Ini termasuk binding data dari object `Task` ke setiap kolom dan
-     * kustomisasi tampilan sel (cell) untuk kolom-kolom tertentu.
-     */
     private void setupColumns() {
         colName.setCellValueFactory(new TreeItemPropertyValueFactory<>("name"));
         colDescription.setCellValueFactory(new TreeItemPropertyValueFactory<>("description"));
@@ -192,10 +165,6 @@ public class DashboardController {
         setupAttachmentColumn();
     }
 
-    /**
-     * Menangani event saat tombol 'Dashboard' diklik.
-     * Menampilkan ringkasan statistik dan daftar tugas yang belum selesai.
-     */
     @FXML
     private void onShowDashboard(ActionEvent event) {
         activeView = "dashboard";
@@ -213,10 +182,6 @@ public class DashboardController {
         buildTreeFromList(incompleteTasks);
     }
 
-    /**
-     * Menangani event saat tombol 'Daftar Tugas' diklik.
-     * Menampilkan semua tugas, baik yang sudah selesai maupun yang belum.
-     */
     @FXML
     private void onShowAll(ActionEvent event) {
         activeView = "all";
@@ -225,10 +190,6 @@ public class DashboardController {
         loadAndBuildAllTasks();
     }
 
-    /**
-     * Menangani event saat tombol 'Tugas Selesai' diklik.
-     * Hanya menampilkan tugas-tugas yang sudah memiliki status 'completed'.
-     */
     @FXML
     private void onShowCompleted(ActionEvent event) {
         activeView = "completed";
@@ -239,10 +200,6 @@ public class DashboardController {
         buildTreeFromList(filteredList);
     }
 
-    /**
-     * Method helper untuk menampilkan atau menyembunyikan elemen UI khusus dashboard.
-     * @param isDashboard true jika tampilan dashboard aktif.
-     */
     private void updateViewVisibility(boolean isDashboard) {
         statsCardBox.setVisible(isDashboard);
         statsCardBox.setManaged(isDashboard);
@@ -252,10 +209,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Method helper untuk memberikan style 'active' pada tombol sidebar yang sedang dipilih.
-     * @param activeButton Tombol yang akan diaktifkan.
-     */
     private void setActiveSidebarButton(Button activeButton) {
         if (sidebar == null) return;
         for (Node node : sidebar.getChildren()) {
@@ -268,9 +221,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Method inti untuk memuat semua data dari database dan membangun ulang TreeTableView.
-     */
     private void loadAndBuildAllTasks() {
         if (currentUserId == null) return;
         List<Task> allTasks = Database.getAllTasks(currentUserId);
@@ -278,11 +228,6 @@ public class DashboardController {
         buildTreeFromList(allTasks);
     }
 
-    /**
-     * Method ini membangun struktur data hierarkis (pohon) untuk TreeTableView.
-     * Juga menambahkan style class 'parent-task-row' pada baris tugas induk.
-     * @param taskList Daftar tugas yang akan ditampilkan di tabel.
-     */
     private void buildTreeFromList(List<Task> taskList) {
         if (taskTreeTable == null) return;
         Map<Integer, TreeItem<Task>> taskMap = new HashMap<>();
@@ -315,13 +260,10 @@ public class DashboardController {
         });
     }
 
-    /**
-     * Menghitung dan memperbarui data pada kartu statistik (Total, Selesai, Aktif)
-     * dan menampilkan tugas dengan deadline terdekat.
-     * @param tasks Daftar semua tugas milik user.
-     */
     private void updateDashboardOverview(List<Task> tasks) {
-        if (tasks == null) return;
+        if (tasks == null) {
+            return;
+        }
         List<Task> mainTasks = tasks.stream().filter(t -> t.getParentId() == null).collect(Collectors.toList());
         long totalCount = mainTasks.size();
         long doneCount = mainTasks.stream().filter(Task::isCompleted).count();
@@ -331,15 +273,39 @@ public class DashboardController {
         doneStatLabel.setText(String.valueOf(doneCount));
         activeStatLabel.setText(String.valueOf(activeCount));
 
-        Optional<Task> nextTask = tasks.stream()
+        List<Task> incompleteTasks = tasks.stream()
                 .filter(t -> !t.isCompleted() && t.getDate() != null && !t.getDate().isEmpty())
-                .min(Comparator.comparing(t -> LocalDate.parse(t.getDate())));
-        nextTaskLabel.setText(nextTask.map(task -> task.getDate() + " - " + task.getName()).orElse("Tidak ada tugas mendatang."));
+                .collect(Collectors.toList());
+
+        if (incompleteTasks.isEmpty()) {
+            nextTaskLabel.setText("Tidak ada tugas mendatang.");
+        } else {
+            LocalDate nearestDate = incompleteTasks.stream()
+                    .map(t -> LocalDate.parse(t.getDate()))
+                    .min(LocalDate::compareTo)
+                    .orElse(null);
+
+            if (nearestDate != null) {
+                List<Task> tasksOnNearestDate = incompleteTasks.stream()
+                        .filter(t -> LocalDate.parse(t.getDate()).isEqual(nearestDate))
+                        .collect(Collectors.toList());
+
+                if (tasksOnNearestDate.size() > 1) {
+                    String taskNames = tasksOnNearestDate.stream()
+                            .map(Task::getName)
+                            .collect(Collectors.joining(", "));
+                    nextTaskLabel.setText(nearestDate.toString() + " - Tugas: " + taskNames);
+                } else if (!tasksOnNearestDate.isEmpty()) {
+                    nextTaskLabel.setText(nearestDate.toString() + " - " + tasksOnNearestDate.get(0).getName());
+                } else {
+                    nextTaskLabel.setText("Tidak ada tugas mendatang.");
+                }
+            } else {
+                nextTaskLabel.setText("Tidak ada tugas mendatang.");
+            }
+        }
     }
 
-    /**
-     * Menangani error jika session pengguna tidak ditemukan, lalu kembali ke halaman login.
-     */
     private void handleSessionError() {
         showErrorDialog("Error Sesi Pengguna", "Sesi pengguna tidak ditemukan. Silakan login ulang.");
         try {
@@ -349,9 +315,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Melakukan kustomisasi pada kolom lampiran untuk menampilkan ikon paperclip jika ada file.
-     */
     private void setupAttachmentColumn() {
         colAttachment.setCellValueFactory(new TreeItemPropertyValueFactory<>("attachmentOriginalName"));
         colAttachment.setCellFactory(param -> new TreeTableCell<>() {
@@ -374,10 +337,6 @@ public class DashboardController {
         });
     }
 
-    /**
-     * Secara dinamis membuat dan mengatur tombol-tombol aksi (Edit, Hapus, dll.)
-     * untuk setiap baris di tabel.
-     */
     private void setupActionButtonsWithIkonli() {
         colAction.setCellFactory(param -> new TreeTableCell<>() {
             @Override
@@ -422,10 +381,6 @@ public class DashboardController {
         });
     }
 
-    /**
-     * Menangani logika saat tombol 'Selesai' atau 'Batal' diklik.
-     * @param task Tugas yang statusnya akan diubah.
-     */
     private void handleToggleCompleteTask(Task task) {
         if (currentUserId == null || task == null) return;
         boolean newStatus = !task.isCompleted();
@@ -446,11 +401,6 @@ public class DashboardController {
         refreshActiveView();
     }
 
-    /**
-     * Method rekursif untuk mengumpulkan semua turunan dari sebuah tugas induk.
-     * @param parent Tugas induk.
-     * @param descendantList List untuk menampung semua turunan yang ditemukan.
-     */
     private void collectAllDescendants(Task parent, List<Task> descendantList) {
         if (currentUserId == null) return;
         List<Task> children = Database.getSubTasks(parent.getId(), this.currentUserId);
@@ -460,10 +410,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Menangani logika untuk membuka dialog tambah sub-tugas.
-     * @param parentTask Tugas yang akan menjadi induk.
-     */
     private void handleAddSubTask(Task parentTask) {
         if (currentUserId == null) return;
         try {
@@ -493,10 +439,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Menangani logika untuk membuka dialog edit tugas.
-     * @param task Tugas yang datanya akan diedit.
-     */
     private void handleEditTask(Task task) {
         if (currentUserId == null) return;
         try {
@@ -521,9 +463,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Memuat ulang data dan tabel berdasarkan view yang sedang aktif.
-     */
     private void refreshActiveView() {
         switch(activeView) {
             case "dashboard":
@@ -539,10 +478,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Menangani logika untuk menghapus tugas, termasuk menampilkan dialog konfirmasi.
-     * @param task Tugas yang akan dihapus.
-     */
     private void handleDeleteTask(Task task) {
         if (currentUserId == null) return;
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
@@ -565,10 +500,6 @@ public class DashboardController {
         });
     }
 
-    /**
-     * Memeriksa dan memperbarui progres tugas induk berdasarkan status anak-anaknya.
-     * @param parentId ID dari tugas induk yang akan diperiksa.
-     */
     private void checkAndUpdateParentTaskProgress(Integer parentId) {
         if (parentId == null || currentUserId == null) return;
         List<Task> subTasks = Database.getSubTasks(parentId, currentUserId);
@@ -581,9 +512,6 @@ public class DashboardController {
         Database.updateTaskCompletion(parentId, parentProgress == 100, parentProgress, currentUserId);
     }
 
-    /**
-     * Menangani event saat tombol 'Tambah Tugas' utama diklik.
-     */
     @FXML
     private void onAddTask(ActionEvent event) {
         if (currentUserId == null) return;
@@ -613,11 +541,6 @@ public class DashboardController {
         }
     }
 
-    /**
-     * Method utilitas untuk menampilkan dialog error.
-     * @param title Judul window alert.
-     * @param message Pesan error yang ditampilkan.
-     */
     private void showErrorDialog(String title, String message) {
         Alert errorAlert = new Alert(Alert.AlertType.ERROR);
         errorAlert.setTitle(title);
@@ -626,10 +549,6 @@ public class DashboardController {
         errorAlert.showAndWait();
     }
 
-    /**
-     * Menangani event klik pada ikon lampiran untuk membuka file.
-     * @param task Tugas yang lampirannya akan dibuka.
-     */
     private void handleOpenAttachment(Task task) {
         if (hostServices == null) return;
         if (task.getAttachmentStoredName() != null && !task.getAttachmentStoredName().isEmpty()) {
